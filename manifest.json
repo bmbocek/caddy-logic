@@ -1,0 +1,22 @@
+{
+  "name": "Caddy Logic",
+  "short_name": "Caddy Logic",
+  "description": "Know the play. Make the call. Shot mechanics, setup cues, and club strategy for every lie and condition on the course.",
+  "start_url": "/caddy-logic/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
