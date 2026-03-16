@@ -1,663 +1,436 @@
-// CADDY LOGIC — Content Database v2.0
-// Smart Play = HOW to set up and execute the safe shot (mechanics first)
-// Let It Eat = HOW to set up and execute the risky alternative
-// Zero fabricated statistics. Real facts and observations only.
+// CADDY LOGIC — Content Database v3.0
+// GOLDEN RULE: Every instruction explicit for someone who never had a lesson.
+// No "normal." No jargon. Physical landmarks only.
+// Smart Play = safe mechanics. Let It Eat = bold but not stupid.
 
 const CL = {
-
-  version: '1.0.1 Beta',
-
-  bags: {
-    '80s': [
-      {name:'Driver',dist:240,on:true},{name:'3-Wood',dist:220,on:true},{name:'5-Wood',dist:195,on:true},
-      {name:'3-Hybrid',dist:180,on:true},{name:'4-Hybrid',dist:170,on:true},{name:'5-Iron',dist:160,on:true},
-      {name:'6-Iron',dist:150,on:true},{name:'7-Iron',dist:140,on:true},{name:'8-Iron',dist:130,on:true},
-      {name:'9-Iron',dist:120,on:true},{name:'PW',dist:110,on:true},{name:'GW',dist:90,on:true},{name:'SW',dist:70,on:true}
-    ],
-    '90s': [
-      {name:'Driver',dist:220,on:true},{name:'3-Wood',dist:200,on:true},{name:'5-Wood',dist:180,on:true},
-      {name:'4-Hybrid',dist:165,on:true},{name:'5-Hybrid',dist:155,on:true},{name:'6-Iron',dist:140,on:true},
-      {name:'7-Iron',dist:130,on:true},{name:'8-Iron',dist:120,on:true},{name:'9-Iron',dist:110,on:true},
-      {name:'PW',dist:100,on:true},{name:'GW',dist:80,on:true},{name:'SW',dist:65,on:true}
-    ],
-    '100s': [
-      {name:'Driver',dist:200,on:true},{name:'3-Wood',dist:180,on:true},{name:'5-Wood',dist:160,on:true},
-      {name:'5-Hybrid',dist:145,on:true},{name:'6-Hybrid',dist:135,on:true},{name:'7-Iron',dist:120,on:true},
-      {name:'8-Iron',dist:110,on:true},{name:'9-Iron',dist:100,on:true},{name:'PW',dist:90,on:true},
-      {name:'GW',dist:75,on:true},{name:'SW',dist:55,on:true}
-    ],
-    '110+': [
-      {name:'Driver',dist:180,on:true},{name:'3-Wood',dist:160,on:true},{name:'5-Wood',dist:145,on:true},
-      {name:'6-Hybrid',dist:130,on:true},{name:'7-Iron',dist:110,on:true},{name:'8-Iron',dist:100,on:true},
-      {name:'9-Iron',dist:90,on:true},{name:'PW',dist:80,on:true},{name:'GW',dist:65,on:true},{name:'SW',dist:50,on:true}
-    ]
-  },
-
-  conditions: {
-    tee:       {label:'Tee',mod:0,group:'terrain',hasSub:true},
-    fairway:   {label:'Fairway',mod:0,group:'terrain'},
-    lt_rough:  {label:'Lt Rough',mod:3,group:'terrain'},
-    dp_rough:  {label:'Dp Rough',mod:7,group:'terrain'},
-    bare_dirt: {label:'Bare Dirt',mod:0,group:'terrain'},
-    fwy_bnk:   {label:'Fwy Bnk',mod:7,group:'terrain'},
-    grn_bnk:   {label:'Grn Bnk',mod:5,group:'terrain',hasSub:true},
-    divot:     {label:'Divot',mod:3,group:'terrain'},
-    up_lie:    {label:'Up Lie',mod:0,group:'slope'},
-    dn_lie:    {label:'Dn Lie',mod:0,group:'slope'},
-    below_ft:  {label:'Below Ft',mod:0,group:'slope'},
-    above_ft:  {label:'Above Ft',mod:0,group:'slope'},
-    trees:     {label:'Trees',mod:0,group:'obstacle',hasSub:true},
-    water:     {label:'Water',mod:0,group:'obstacle',hasSub:true},
-    lip:       {label:'Lip',mod:0,group:'obstacle'}
-  },
-
-  subLabels: {
-    tee_par3:'Tee · Par 3',tee_par45:'Tee · Par 4/5',
-    trees_around_l:'Trees · Go Left (Draw)',trees_around_r:'Trees · Go Right (Fade)',
-    trees_over:'Trees · Go Over',trees_punch:'Trees · Punch Out',
-    grn_bnk_clean:'Greenside Bunker · Clean',grn_bnk_plugged:'Greenside Bunker · Plugged',grn_bnk_wet:'Greenside Bunker · Wet',
-    water_front_over:'Water In Front · Over',water_front_layup:'Water In Front · Lay Up',
-    water_left:'Water Left · Aim Away',water_right:'Water Right · Aim Away',water_crossing:'Water Crossing · Carry'
-  },
-
-  wind: [
-    {label:'0mph',mod:0,color:'#999'},
-    {label:'+3mph',mod:3,color:'#ccc'},
-    {label:'+7mph',mod:7,color:'#ccc'},
-    {label:'+12mph',mod:12,color:'#ccc'}
-  ],
-
-  elevation: [
-    {label:'None',mod:0},{label:'▲ Slight',mod:4},{label:'▲ Steep',mod:10},
-    {label:'▼ Slight',mod:-4},{label:'▼ Steep',mod:-10}
-  ],
-
-  // =============================================
-  // ADVICE — mechanics focused
-  // Each entry: ball, weight, swing, aim, remember
-  // smartText = front of Smart Play card
-  // heroText = front of Let It Eat card
-  // heroDanger = Danger section on hero card back
-  // =============================================
-  advice: {
-    _default: {
-      ball:'Center of stance for short irons. In line with shirt logo for mid-irons. Inside front heel for woods.',
-      weight:'Slightly favoring front foot for irons. Even for woods and hybrids.',
-      swing:'Hit DOWN on irons — the divot comes AFTER the ball. Sweep woods off the turf.',
-      aim:'Center of the green. Biggest target, biggest margin.',
-      remember:'Clean contact beats perfect aim. Solid strike is the only goal.',
-      smartText:'center green. Solid contact, smooth tempo. Let the club do the work.',
-      heroText:'at the pin. Same fundamentals, smaller target. Full commitment.',
-      heroDanger:'Missing the pin means missing the green. Center green is 30 feet from the pin at worst.'
-    },
-    tee_par3: {
-      ball:'Tee it low — barely above the grass for irons. Quarter of ball above face for hybrids/woods.',
-      weight:'Even. Slight favor toward front foot with irons.',
-      swing:'Smooth tempo. The tee is a perfect lie — don\'t waste it by swinging harder than normal.',
-      aim:'Center of the green. The pin is tempting but center green means guaranteed on.',
-      remember:'Best lie you\'ll have all hole. Don\'t complicate it. Smooth swing, solid contact.',
-      smartText:'center green. Perfect lie, smooth swing. Green is the target, not the pin.',
-      heroText:'at the flag. Same smooth tempo, same solid contact, tighter target.',
-      heroDanger:'Pin-seeking adds risk with zero extra reward unless you\'re inside 10 feet.'
-    },
-    tee_par45: {
-      ball:'Driver: inside front heel, tee high — half the ball above the face. Wood: tee flush with grass.',
-      weight:'Driver: 60% back foot, lead shoulder tilted up. You\'re swinging UP through the ball.',
-      swing:'Driver: sweep UP through impact. Feel the club going up as it hits the ball. Head stays behind.',
-      aim:'Center of the fairway. It\'s 30-40 yards wide. That\'s a huge target.',
-      remember:'The fairway is the target. Any ball in the fairway is a win. Distance is secondary.',
-      smartText:'to the fairway. Smooth tempo, find the short grass. The fairway sets up everything.',
-      heroText:'driver, full send. Same fundamentals — head down, full turn, trust your swing.',
-      heroDanger:'Driver is the longest club and hardest to control. Fairway wood hits fairway more often.'
-    },
-    lt_rough: {
-      ball:'Same as fairway. Don\'t change your setup for light rough.',
-      weight:'55% front foot — just a touch more than normal.',
-      swing:'Swing slightly more aggressively through impact. Grass grabs the face — don\'t let it slow you.',
-      aim:'Center green. Light rough barely changes direction. The face closes slightly — aim a touch right.',
-      remember:'Club up one. The grass costs a few yards. Aim slightly right (righties) — rough closes the face.',
-      smartText:'center green. Same swing as fairway, just swing through a bit harder. The rough barely matters.',
-      heroText:'at the pin. Light rough is almost a fairway lie. If you\'re going to attack, this is reasonable.',
-      heroDanger:'Light rough is barely a penalty. The real danger is overthinking a simple shot.'
-    },
-    dp_rough: {
-      ball:'Move ball BACK one ball in stance. This steepens your attack to cut through the grass.',
-      weight:'65-70% front foot. Plant it there and KEEP it there.',
-      swing:'Swing AGGRESSIVELY through impact. The grass grabs the club HARD — you need speed to cut through. Never decelerate.',
-      aim:'Aim RIGHT of target (righties). Deep grass closes face and pulls ball left. The deeper the rough, the more left.',
-      remember:'Grass closes face, kills distance. Club up two. Aim right. Swing hard. Don\'t try to be precise — just get it OUT.',
-      smartText:'center green. Ball back, weight forward, swing hard through. The grass is going to grab — fight through it.',
-      heroText:'at the pin from deep rough. Full commitment. Same setup but you need perfect contact.',
-      heroDanger:'Miss-hits from deep rough go nowhere. The grass wins and you advance 30 yards.'
-    },
-    bare_dirt: {
-      ball:'Move back one ball. Hit ball first — there\'s ZERO cushion for a fat shot.',
-      weight:'65% front foot. Don\'t let the club bounce off hard ground.',
-      swing:'Hit DOWN firmly. Ball first, THEN ground. Fat = club bounces off dirt = you blade it 50 yards over the green.',
-      aim:'Center green. Ball-first contact is the only priority here.',
-      remember:'Hard ground, zero forgiveness. Hit the ball before the ground or you blade it. Ball back, hands forward.',
-      smartText:'center green. Ball back, hands ahead, hit DOWN. The ground won\'t forgive a fat shot.',
-      heroText:'at the pin from hard pan. Perfect ball-first contact gets you spin and control.',
-      heroDanger:'Fat shots on bare dirt = bladed over the green. Zero margin for error.'
-    },
-    fwy_bnk: {
-      ball:'Center or slightly back. You MUST hit ball first — not sand.',
-      weight:'60% front foot. Dig feet into sand for stability.',
-      swing:'THREE-QUARTER swing maximum. Smooth tempo. Ball first, then sand. Don\'t try to help it up.',
-      aim:'Center green. Solid contact from sand IS the win.',
-      remember:'Ball first. NOT sand first. Grip down one inch. Three-quarter swing. Control over power.',
-      smartText:'center green from sand. Grip down, ball first, three-quarter swing. Control is everything in a bunker.',
-      heroText:'at the flag from fairway sand. Full swing, perfect ball-first contact required.',
-      heroDanger:'Any sand before the ball costs you 50+ yards. Three-quarter to center green is the smart play.'
-    },
-    grn_bnk_clean: {
-      ball:'FORWARD — in line with front heel.',
-      weight:'60% front foot. Open your stance — feet aim LEFT of target (righties).',
-      swing:'Open face BEFORE you grip. Swing along your foot line (left). Hit sand 2 inches BEHIND ball. Sand throws ball out. ACCELERATE through.',
-      aim:'Center of green. The ball pops up soft and stops quickly.',
-      remember:'You\'re NOT hitting the ball. You\'re hitting SAND behind it. The sand launches the ball. Never decelerate.',
-      smartText:'out of the bunker to center green. Open face, open stance, hit 2 inches behind the ball. Let the sand do all the work.',
-      heroText:'at the pin. Same technique. Control distance with backswing length — longer swing = more distance.',
-      heroDanger:'Distance control from bunkers is the hardest skill in golf. Getting out is the win.'
-    },
-    grn_bnk_plugged: {
-      ball:'Center to slightly back. NOT forward like a clean lie.',
-      weight:'70% front foot. Lean into it.',
-      swing:'SQUARE face — NOT open. Steep backswing with wrist hinge. SLAM into sand close behind ball. Don\'t worry about follow-through.',
-      aim:'Just get it OUT. Anywhere on the green is a win.',
-      remember:'SQUARE face for plugged. NOT open. Steep swing, slam sand. Ball comes out low and hot — plan for the run.',
-      smartText:'out of the plugged lie. Square face, steep swing, slam the sand. It comes out low and running. Anywhere on the green is a great result.',
-      heroText:'at the pin from a plugged lie. Same technique, but aim for the ball to land short and run to the hole.',
-      heroDanger:'Plugged lies are the most unpredictable shot in golf. Sometimes it pops, sometimes it stays.'
-    },
-    grn_bnk_wet: {
-      ball:'Slightly back of center.',
-      weight:'65% front foot.',
-      swing:'Hit CLOSER to ball than dry — 1 inch behind instead of 2. Wet sand is heavy. More speed needed.',
-      aim:'Center green. Wet sand makes distance unpredictable.',
-      remember:'Wet sand is HEAVY. More speed, closer contact. Commit — wet sand punishes deceleration brutally.',
-      smartText:'out of wet sand onto the green. Closer contact than dry, more speed, full commit through.',
-      heroText:'at the pin from wet sand. Full commit with extra speed.',
-      heroDanger:'Wet sand chunks differently. Ball can come out hot or not at all. Just get on the green.'
-    },
-    divot: {
-      ball:'Back one or two balls. Need a STEEP angle to get under the ball.',
-      weight:'70% front foot. Planted.',
-      swing:'Hit DOWN aggressively. Punch the ball into the ground. Don\'t scoop — the loft lifts it.',
-      aim:'Center green. Ball comes out low and runs more than normal.',
-      remember:'Low, hot ball flight. Aim short. The steep angle removes loft. Plan for extra run.',
-      smartText:'center green from the divot. Ball back, hands forward, punch down. Expect lower trajectory and more roll.',
-      heroText:'at the pin from a divot. Same steep punch, tighter target. Plan for the run.',
-      heroDanger:'Thin shots from divots are common. Either perfect or screaming over the green.'
-    },
-    up_lie: {
-      ball:'Slightly forward — uphill moves your low point forward.',
-      weight:'Gravity pulls you back. Let it. Lean INTO the hill, don\'t fight it.',
-      swing:'Tilt shoulders to MATCH the slope. Swing ALONG the hill. Don\'t fight the terrain.',
-      aim:'Ball flies HIGHER and LEFT (righties). Aim right. Club UP — extra height costs distance.',
-      remember:'Shoulders match slope. Higher flight, less distance, pulls left. Club up. Ball stops dead — fly it all the way.',
-      smartText:'center green. Match your shoulders to the hill, swing along the slope. Club up for the lost distance.',
-      heroText:'at the pin from an uphill lie. Same slope mechanics, tighter line. Aim right of pin — it\'ll pull left.',
-      heroDanger:'Ball stops DEAD on uphill shots. No roll. Fly it the full distance to your target.'
-    },
-    dn_lie: {
-      ball:'BACK in stance — downhill moves low point backward.',
-      weight:'Falls forward naturally. Let it. Keep moving toward target.',
-      swing:'Shoulders MATCH slope. Chase the ball down the hill after impact.',
-      aim:'Lower flight, goes RIGHT (righties). Aim left. Club DOWN — lower flight adds distance.',
-      remember:'Shoulders match slope. Low flight, lots of run, fades right. Club down for extra distance.',
-      smartText:'center green. Match shoulders to downhill slope, swing along it. Club down — ball will run.',
-      heroText:'at the pin on the downslope. Low, running ball. Pick your landing spot short.',
-      heroDanger:'Low, running shots. Easy to fly the green because ball doesn\'t check up.'
-    },
-    below_ft: {
-      ball:'Center of stance.',
-      weight:'On your heels. WIDEN stance for stability.',
-      swing:'Bend MORE from hips. Sit into legs like a barstool. More up-and-down swing path.',
-      aim:'Ball goes RIGHT (righties). Aim LEFT. Steeper slope = more fade.',
-      remember:'WIDEN stance. Bend more. Aim left. Ball WILL fade right. Guaranteed.',
-      smartText:'center green, aim left. Widen stance, bend from hips. The ball will drift right — plan for it.',
-      heroText:'at the pin, accounting for the rightward drift. Aim left of the flag.',
-      heroDanger:'The ball going right is almost guaranteed. Double-miss right and you\'re in real trouble.'
-    },
-    above_ft: {
-      ball:'Center of stance.',
-      weight:'On your toes. Lean into the hill.',
-      swing:'Stand TALLER. Grip DOWN 1-2 inches. Flatter, more around-the-body swing.',
-      aim:'Ball goes LEFT (righties). Aim RIGHT. Steeper slope = more draw/hook.',
-      remember:'GRIP DOWN. Stand taller. Aim right. Ball WILL draw/hook left. Guaranteed.',
-      smartText:'center green, aim right. Grip down, stand taller. The ball will draw left — aim for it.',
-      heroText:'at the pin, playing the natural draw. Aim right of the flag.',
-      heroDanger:'Hook left is guaranteed. Aim left AND it hooks = disaster. Always aim right.'
-    },
-    trees_around_l: {
-      ball:'Slightly back of center for a draw path.',
-      weight:'Normal.',
-      swing:'Body aims RIGHT of tree. Clubface aims at target (left of tree). Swing along body line. Mismatch creates left curve.',
-      aim:'Start the ball right of the tree, let it curve left around it.',
-      remember:'Body right, face at target. Swing your body. Ball curves left. COMMIT — half swings go straight into the tree.',
-      smartText:'draw left around the tree. Body aims right, clubface at target. Swing along your body line — the ball curves left.',
-      heroText:'full draw to the green, curving left around the tree. Same setup, full commitment.',
-      heroDanger:'Not enough curve = tree. Too much curve = way left. The gap looks bigger from behind the ball.'
-    },
-    trees_around_r: {
-      ball:'Slightly forward for a fade path.',
-      weight:'Normal.',
-      swing:'Body aims LEFT of tree. Clubface at target (right of tree). Swing along body. Ball curves right.',
-      aim:'Start ball left of tree, let it curve right.',
-      remember:'Body left, face at target. Swing your body. Ball curves right. Full commit.',
-      smartText:'fade right around the tree. Body aims left, clubface at target. Swing your body line — ball curves right.',
-      heroText:'full fade to the green, curving right around the tree. Same setup, full send.',
-      heroDanger:'No curve = tree. Too much curve = way right. Commit to the shape or don\'t try it.'
-    },
-    trees_over: {
-      ball:'FORWARD in stance — inside front heel. Maximum launch.',
-      weight:'Stay BEHIND the ball. 60% back foot.',
-      swing:'Full swing. Trust the loft. Do NOT scoop — scooping causes thin shots that hit the tree.',
-      aim:'Straight over the tree. Give yourself clearance.',
-      remember:'The LOFT lifts the ball. Not your hands. If you\'re not sure you clear it, punch out sideways.',
-      smartText:'over the tree with maximum loft. Ball forward, stay behind it. The club does the lifting.',
-      heroText:'over the tree AT the green. You need height AND distance.',
-      heroDanger:'Ball doesn\'t get up fast enough = hits tree, drops straight down. Punch out is safer.'
-    },
-    trees_punch: {
-      ball:'BACK in stance — inside back foot.',
-      weight:'70% front foot.',
-      swing:'HALF swing. LOW finish — hands stop at waist height. Ball comes out low and running.',
-      aim:'Widest gap. The fairway. Safety.',
-      remember:'Low and running. Pick the WIDEST gap. One shot to the fairway = bogey. Through the trees = triple.',
-      smartText:'sideways to the fairway. Pick the widest gap. Half swing, low finish, ball comes out running.',
-      heroText:'through the gap to the green. Low, running, through a window between trunks. Full commit to the line.',
-      heroDanger:'Trees are 90% air, but the wood always wins. The gap looks bigger than it is.'
-    },
-    water_front_over: {
-      ball:'Normal position for the club. Don\'t change setup because of water.',
-      weight:'Normal. Don\'t tighten up. Tension kills distance over water.',
-      swing:'FULL, COMMITTED swing. Pick a target on the OTHER side of the water and swing to it. Never decelerate.',
-      aim:'Center of the green, past the water. Commit to a full swing.',
-      remember:'Can you carry it with TWO clubs to spare? Yes = go. No = lay up. Deceleration over water is how balls swim.',
-      smartText:'over the water with your safe club. The one that carries it with room to spare. Not your exact-distance club.',
-      heroText:'at the pin over the water. Full commit. Your exact-distance club or one less. Zero margin for error.',
-      heroDanger:'Exact-distance club over water requires PERFECT contact. One yard short = splash. Club up.'
-    },
-    water_front_layup: {
-      ball:'Normal position.',
-      weight:'Normal.',
-      swing:'Smooth, controlled swing. You\'re hitting to a SPECIFIC distance — your favorite wedge yardage.',
-      aim:'Lay up to YOUR number. What distance do you hit your wedge best? Go there.',
-      remember:'Lay up to your best wedge distance, not just "short of the water." A 80-yard wedge is easier than a 40-yard pitch.',
-      smartText:'lay up to your favorite wedge distance. Pick a specific target. Smooth, controlled swing to that yardage.',
-      heroText:'challenge the water anyway. Full swing at the green.',
-      heroDanger:'Laying up is the smart play when the carry is tight. A crisp wedge from the fairway beats a wet ball.'
-    },
-    water_left: {
-      ball:'Normal.',
-      weight:'Normal.',
-      swing:'Normal swing. The water is a mental hazard more than a physical one from here.',
-      aim:'Aim RIGHT. Away from the water. Give yourself a cushion. Miss AWAY from the hazard.',
-      remember:'Aim away from the water. Miss to the SAFE side. A ball in the rough right is better than a ball in the water left.',
-      smartText:'center-right of green, away from the water. Aim to miss on the safe side. Right rough beats wet ball.',
-      heroText:'at the pin even though water is left. Trust your line and commit.',
-      heroDanger:'Pulls and hooks go in the water. Aim right of the pin — even a slight miss left stays dry.'
-    },
-    water_right: {
-      ball:'Normal.',
-      weight:'Normal.',
-      swing:'Normal swing. Don\'t steer — steering causes the exact miss you\'re trying to avoid.',
-      aim:'Aim LEFT. Away from the water. Miss to the safe side.',
-      remember:'Aim away from water. Miss SAFE. Don\'t steer the ball — steering causes pushes and slices toward the water.',
-      smartText:'center-left of green, away from the water. Aim to miss safe. Left rough beats a penalty stroke.',
-      heroText:'at the pin with water right. Commit to your line — steering causes the exact miss you fear.',
-      heroDanger:'Pushes and slices go in the water. Aim left of the pin and let the shot come back to it.'
-    },
-    water_crossing: {
-      ball:'Normal for the club you\'re hitting.',
-      weight:'Normal. Don\'t tighten up.',
-      swing:'Full, committed swing. You must CARRY the water — there\'s no option around it.',
-      aim:'Over the water. Pick a target on land on the other side and commit to it.',
-      remember:'You MUST carry this. Use a club with margin. If you can\'t carry with two clubs to spare, don\'t cross — go sideways.',
-      smartText:'over the water crossing. Use a club that carries with margin. Full, committed swing to a target past the water.',
-      heroText:'over the crossing at the pin. Tight carry, tight target. Full send.',
-      heroDanger:'No layup option with crossing water. You carry it or you don\'t. Use enough club.'
-    },
-    lip: {
-      ball:'FORWARD for maximum height.',
-      weight:'Stay behind the ball.',
-      swing:'Full steep swing. Most lofted club. Get the ball UP fast.',
-      aim:'Over the lip. Height first, distance second.',
-      remember:'Clear the lip or do this again. More loft than you think. The lip is always taller from down here.',
-      smartText:'over the lip with maximum loft. Height is the only priority. Distance doesn\'t matter if it hits the lip.',
-      heroText:'over the lip AND control distance. Clear the lip with enough to reach the target.',
-      heroDanger:'Hit the lip = ball rolls back to your feet. Use more loft than you think.'
-    }
-  },
-
-  // =============================================
-  // KICKERS — expanded, 8-12 per situation
-  // =============================================
-  kickers: {
-    _default: [
-      'The boring shot is the one your scorecard likes best.',
-      'Two putts from the middle beats three from the fringe.',
-      'Your scorecard doesn\'t remember which shot was exciting.',
-      'Par from center green is always available.',
-      'Center green. Every time. Until you have a reason not to.',
-      'Solid contact. That\'s the whole assignment.',
-      'The safe shot is the one you forget by the 19th hole.',
-      'Nobody three-putts from the center. Almost nobody.',
-      'A smooth swing beats a hard swing 18 times out of 18.',
-      'The best shot you\'ll hit today will feel easy.'
-    ],
-    tee_par3: [
-      'Perfect lie, big target. Don\'t overthink the gift.',
-      'The tee box is the only place the course can\'t trick you.',
-      'Breathe. You chose this club for a reason.',
-      'Nobody talks about the par they made from center green. But they all count the same.',
-      'The pin is a distraction. The green is the target.',
-      'Tee it, trust it, swing smooth. That\'s par-3 golf.',
-      'Your caddy says center green. Your ego says pin. Your caddy has a better track record.',
-      'Every par 3 green has a middle. That\'s your spot.'
-    ],
-    tee_par45: [
-      'The fairway is 35 yards wide. Find it.',
-      'You don\'t win holes on the tee. You lose them there.',
-      'Driver goes further. Fairway wood goes straighter. Pick your priority.',
-      'Trees are 90% air, but the wood always wins.',
-      'Nobody ever said "I wish I\'d tried to hit it further off the tee."',
-      'The safe play off the tee sets up the hero play into the green.',
-      'Fairway, approach, two putts. That\'s a good hole. Make it happen off the tee.',
-      'The most important shot on a par 4 is the one that finds the fairway.',
-      'A 3-Wood in the fairway beats a driver in the trees. Every single time.',
-      'Your playing partners don\'t remember your tee shot. They remember your score.'
-    ],
-    lt_rough: [
-      'It\'s rough, not a crime scene. You\'re fine.',
-      'One club more. That\'s all the grass is costing you.',
-      'The first cut is basically a fairway with an attitude problem.',
-      'Don\'t panic. The grass barely has your ball.',
-      'Light rough is golf\'s way of saying "close enough."',
-      'Same swing, same setup, slightly more commitment through impact.',
-      'The grass grabbed your ball. Don\'t let it grab your confidence.',
-      'One extra club and a normal swing. That\'s the play.'
-    ],
-    dp_rough: [
-      'The grass took your distance. Don\'t let it take your brain too.',
-      'Get it out in one. That\'s the whole assignment.',
-      'Your hybrid can\'t see the ball either. Grab a shorter club.',
-      'Bogey from deep rough is a win. Double is what happens when you get ambitious.',
-      'Aim right. The grass closes the face. Every time.',
-      'The hero play from deep rough is the leading cause of snowmen.',
-      'Club up. Swing hard. Aim right. That\'s the recipe from deep rough.',
-      'The ball is sitting down. Your expectations should too.',
-      'Advance the ball to the fairway. That\'s winning from here.',
-      'Two shots from the rough to the green is fine. One shot to the next fairway bunker is not.'
-    ],
-    bare_dirt: [
-      'Ball first. If you hit the dirt first, you\'re putting from the parking lot.',
-      'Hard ground, hard truth: hit the ball before the ground.',
-      'There\'s no grass to save you. Precision or pain.',
-      'Grip down, hit down. The ground doesn\'t care about your feelings.',
-      'Clean contact from bare dirt is a legitimate skill. Today you learn it.',
-      'The ball is sitting on concrete. Treat it that way.',
-      'Ball back, hands forward, hit down. Three thoughts. That\'s all you need.',
-      'Fat shots on hard pan don\'t stay fat. They become thin shots over the green.'
-    ],
-    fwy_bnk: [
-      'Ball first. This isn\'t a beach shot — it\'s an iron shot in a sandbox.',
-      'Grip down, dig in, hit ball first. That\'s the whole playbook.',
-      'Three-quarter swing. Control beats power in sand.',
-      'Hit the sand first and you get to hit from the sand again.',
-      'Your feet are in sand. Your ball doesn\'t have to stay there.',
-      'Every fairway bunker shot starts with the same thought: ball first.',
-      'Dig in. Grip down. Ball first. Three things. Remember them.',
-      'The sand is testing your discipline. Pass the test.',
-      'Three-quarter swings from fairway bunkers advance the ball 85% as far with 200% more reliability.'
-    ],
-    grn_bnk: [
-      'Hit the sand hard. It started this fight.',
-      'The sand does the work. You just need speed.',
-      'Open face, open stance, and swing like you\'re not afraid.',
-      'Decelerate in the bunker and you get to hit from the bunker again.',
-      'The bounce on your wedge was DESIGNED for this exact shot.',
-      'The lip is always taller than you think from down here.',
-      'You\'re not hitting the ball. You\'re hitting the sand. The sand moves the ball.',
-      'Every bunker shot you\'ve seen on TV used the same technique. Open, behind, accelerate.',
-      'A bunker shot onto the green — any part of the green — is a great shot.',
-      'The ball doesn\'t know it\'s in a bunker. But you do. Stay calm.'
-    ],
-    divot: [
-      'Someone else\'s divot, your problem. Ball back and dig it out.',
-      'Lower trajectory, more run. Aim short of the pin.',
-      'If golf had a "that\'s not fair" rule, divots would be exhibit A.',
-      'The only way out is through. Hit down like you mean it.',
-      'Steep and aggressive. That\'s divot golf.',
-      'Plan for the run. This ball is coming in hot.',
-      'Ball back, hands ahead, steep swing. Three moves.',
-      'Your playing partner feels bad for you. Use that energy.'
-    ],
-    up_lie: [
-      'The hill is eating your distance. Feed it an extra club.',
-      'Lean into the slope, not against it.',
-      'Uphill = higher flight, less roll. Fly it all the way.',
-      'Shoulders match slope. That\'s the entire thought.',
-      'Match the hill. The ball knows which way is up.',
-      'Club up. The uphill takes 5-10 yards. Give them back.',
-      'Your ball will stop dead when it lands. Plan accordingly.',
-      'The hill is your enemy today. Give it what it wants — an extra club.'
-    ],
-    dn_lie: [
-      'Low and running. Aim short and let gravity help.',
-      'Gravity is undefeated. Don\'t fight the slope.',
-      'This ball is coming out hot. Plan for the run.',
-      'Chase the ball down the hill. Let the club follow the slope.',
-      'Club down. The slope adds distance you didn\'t ask for.',
-      'Downhill lies are why golf is hard. Respect it.',
-      'Ball back, shoulders match slope. Two thoughts.',
-      'The ball will run 20% further than normal. Aim 20% shorter.'
-    ],
-    below_ft: [
-      'The ball is going right. Aim left. That\'s the whole secret.',
-      'Gravity wins every argument. Aim left.',
-      'Your knees are doing more work than your arms here.',
-      'Below your feet means above your skill level. Be honest about the aim.',
-      'Widen. Bend. Aim left. Those are your three words.',
-      'The fade is guaranteed. The only question is how much.',
-      'Sit into it like you\'re on a barstool. Reach for the ball.',
-      'Everything about this lie wants the ball to go right. Let it — aim left.'
-    ],
-    above_ft: [
-      'It\'s going left. Hard. Aim further right than feels comfortable.',
-      'Choke up, aim right, and trust the draw.',
-      'The slope closes your clubface. Plan for the hook.',
-      'Stand tall, grip short. The hill is doing half the work.',
-      'Grip down so you don\'t chunk it into the hill.',
-      'The ball WILL hook left. That\'s not a mistake — it\'s physics.',
-      'Aim right of right. Then a little more right.',
-      'This is free draw spin. Use it — aim right and let it curve.'
-    ],
-    trees: [
-      'Sideways to the fairway. One shot lost, not three.',
-      'The hero shot costs three strokes. The safe play costs one.',
-      'Trees are 90% air, but the wood always wins.',
-      'The gap looks bigger from behind the ball than it actually is.',
-      'One swing to the fairway, then a full shot to the green. That\'s a bogey, not a triple.',
-      'The forest doesn\'t have a highlight reel.',
-      'Punch outs win championships. Hero shots win stories.',
-      'Every tree on this course has been hit by someone smarter than you. Take the safe route.',
-      'Your ball in the fairway is worth three in the trees.',
-      'A bogey you can live with. A triple you\'ll talk about for the wrong reasons.'
-    ],
-    water: [
-      'Golf balls don\'t float. If you can\'t clear it by two clubs, don\'t try.',
-      'The splash is louder than you think.',
-      'Lay up to your favorite wedge distance. A crisp wedge beats a wet long iron.',
-      'Deceleration over water is how golf balls learn to swim.',
-      'Your ego says go for it. Your wallet says those balls cost $4 each.',
-      'Water doesn\'t care about your feelings. Use enough club.',
-      'Tension kills distance. The water creates tension. Swing smooth.',
-      'The water is a mental hazard. Your swing doesn\'t know it\'s there unless you tell it.',
-      'Two clubs of margin over water. That\'s the rule. No exceptions.',
-      'A penalty stroke from the water turns par into double. Lay up turns par into bogey. The math is clear.',
-      'Full commit or lay up. There is no middle ground over water.',
-      'The drop zone is never where you want to be. Use enough club.'
-    ],
-    lip: [
-      'The lip is non-negotiable. Clear it or repeat it.',
-      'Get it OUT first. Get it CLOSE second.',
-      'More loft than you think. The lip is always taller from down here.',
-      'Your distance doesn\'t matter if the ball hits the lip and rolls back.',
-      'Lob wedge, full swing, maximum height. Worry about distance later.',
-      'The lip doesn\'t negotiate. Use enough loft.',
-      'If the ball hits the lip, you do this again. Use more loft.',
-      'Height over the lip first. Everything else is bonus.'
-    ]
-  },
-
-  // =============================================
-  // PRE-ROUND WELCOMES
-  // =============================================
-  welcomes: [
-    {silver:'New round. Clean slate.',copper:'Same mistakes are optional.'},
-    {silver:'18 holes. One shot at a time.',copper:'The scorecard only remembers the total.'},
-    {silver:'Breathe. Grip light. Pick a target.',copper:'Everything else is noise.'},
-    {silver:'You brought the clubs.',copper:'Let\'s see who wins today.'},
-    {silver:'Every hole starts at zero.',copper:'Keep it that way as long as possible.'},
-    {silver:'The course doesn\'t know your handicap.',copper:'Play smarter than your number.'},
-    {silver:'You don\'t have to be great today.',copper:'You just have to be smart.'},
-    {silver:'New day. New round.',copper:'Old habits are the only enemy.'},
-    {silver:'Good golf is boring golf.',copper:'Let\'s be boring together.'},
-    {silver:'The caddy is ready.',copper:'Are you?'},
-    {silver:'Fairways and greens.',copper:'Everything else is optional.'},
-    {silver:'Your swing is your swing.',copper:'Your decisions are where we come in.'}
-  ],
-
-  // =============================================
-  // CONFESSIONAL KICKERS
-  // =============================================
-  confessionalKickers: {
-    allSmart: [
-      'Zero hero shots. Zero drama. The caddy is impressed.',
-      'You listened every time you asked. That\'s rarer than you think.',
-      'All smart, all day. The boring golfer wins.',
-      'No hero shots. Your ego took the day off.',
-      'Perfect discipline. The caddy has nothing to complain about.',
-      'Every shot smart. That\'s how you improve without changing your swing.'
-    ],
-    someHero: [
-      'How\'d that work out?',
-      'The caddy tried to warn you.',
-      'Bold choices were made. Results may vary.',
-      'You asked the caddy and then did the opposite. Classic.',
-      'One or two hero moments. The caddy noted them.',
-      'Almost perfect discipline. Almost.'
-    ],
-    manyHero: [
-      'The caddy is questioning your commitment to listening.',
-      'Multiple hero attempts. The ego was fully in charge today.',
-      'You asked the caddy a lot. You listened... less.',
-      'The gap between knowing and doing. That\'s where your strokes live.',
-      'The caddy talked. The ego listened louder.',
-      'More hero shots than smart plays. That\'s honest, at least.'
-    ],
-    lowUsage: [
-      'Everyone starts somewhere. Open the app more and see what happens.',
-      'You asked once. Imagine if you asked on every trouble shot.',
-      'One consultation. One smart decision. Build from there.',
-      'The caddy was available all day. You checked in briefly.',
-      'Imagine if you asked more often.'
-    ]
-  },
-
-  flexKickers: {
-    perfect: [
-      '{smart} shots consulted. {smart} times I listened. Discipline.',
-      'Zero hero shots. My ego took the day off. — Caddy Logic',
-      'I listened to my caddy every time. The boring golfer wins.'
-    ],
-    withHero: [
-      '{total} shots. {smart} smart, {hero} hero. My caddy has notes.',
-      'I listened to my caddy {smart} out of {total} times. No comment on the rest.',
-      'My caddy said Smart Play. I said Let It Eat. My caddy was right. — Caddy Logic'
-    ]
-  },
-
-  roasts: [
-    'Just got out-caddied by a phone app. Consulted Caddy Logic {total} times and listened {smart}. That hero shot? Don\'t ask.',
-    'My golf caddy app told me to hit center green. I said "I can reach that pin." Reader, I could not reach that pin.',
-    'Downloaded @CaddyLogic and it\'s basically a therapist for my golf game. "How\'d that work out?" is my new least favorite question.',
-    'Caddy Logic said lay up. I said "I can carry the water." The water said no.',
-    '{total} shots today. The caddy was right {smart} times. My ego was right... still calculating.',
-    'My caddy app told me to punch out sideways. I went through the trees. Trees: 1. Me: 0.'
-  ],
-
-  everySwing: 'Head down. Eye on the ball. Smooth back, accelerate through. Finish your swing.',
-
-  // =============================================
-  // CONFIDENCE MODEL — bar widths (visual only)
-  // =============================================
-  confidence: {
-    baseSmart: 90, baseHero: 55,
-    penalties: {
-      lt_rough:{s:-3,h:-5},dp_rough:{s:-12,h:-22},bare_dirt:{s:-5,h:-12},
-      fwy_bnk:{s:-10,h:-20},grn_bnk:{s:-8,h:-15},divot:{s:-5,h:-10},
-      up_lie:{s:-3,h:-5},dn_lie:{s:-5,h:-10},below_ft:{s:-8,h:-15},above_ft:{s:-5,h:-10},
-      trees:{s:-10,h:-25},water:{s:-5,h:-18},lip:{s:-8,h:-20},
-      wind_1:{s:-2,h:-3},wind_2:{s:-3,h:-6},wind_3:{s:-8,h:-14},
-      rain:{s:-3,h:-5},long_club:{s:-3,h:-8}
-    },
-    min: 8
-  },
-
-  // =============================================
-  // PRIVACY POLICY
-  // =============================================
-  privacyPolicy: `Caddy Logic collects zero data. Everything stays on your device.\n\nNo accounts. No sign-ups. No tracking. No analytics. No ads. No data sold.\n\nYour club distances, shot history, and round data are stored locally on your phone using your browser's storage. If you clear your browser data, this information is deleted.\n\nWe don't know who you are, where you play, or what you shoot. That's by design.\n\nYour caddy, your data.`,
-
-  termsOfService: `Caddy Logic provides golf strategy suggestions for recreational use only.\n\nThis app is not a substitute for professional golf instruction. All advice is general guidance based on common golf situations.\n\nNot approved for use during sanctioned tournament play per USGA Rule 4.3.\n\nUse at your own discretion. Caddy Logic is not responsible for any outcomes on the golf course.\n\nBy using this app, you acknowledge that golf involves inherent risks and that club selection and shot strategy are ultimately your responsibility.\n\nKnow the play. Make the call.`,
-
-  // =============================================
-  // HELPERS
-  // =============================================
-  getKicker(key) {
-    const pool = this.kickers[key] || this.kickers._default;
-    return pool[Math.floor(Math.random() * pool.length)];
-  },
-  getWelcome() {
-    return this.welcomes[Math.floor(Math.random() * this.welcomes.length)];
-  },
-  findClub(bag, dist) {
-    const active = bag.filter(c => c.on).sort((a, b) => b.dist - a.dist);
-    if (!active.length) return null;
-    // Find club where distance >= adjusted (enough club)
-    let best = null;
-    for (const c of active) {
-      if (c.dist >= dist) best = c;
-    }
-    // If no club reaches, use longest
-    if (!best) best = active[0];
-    // If exact match or closest, prefer slightly more club
-    return best;
-  },
-  findHeroClub(bag, smartClub, dist) {
-    const active = bag.filter(c => c.on).sort((a, b) => b.dist - a.dist);
-    const idx = active.findIndex(c => c.name === smartClub.name);
-    // Hero uses one less club (shorter) for a tighter shot
-    if (idx < active.length - 1) return active[idx + 1];
-    return smartClub;
-  },
-  calcConfidence(conds, wind, rain, clubDist) {
-    let s = this.confidence.baseSmart, h = this.confidence.baseHero;
-    for (const c of conds) {
-      const p = this.confidence.penalties[c];
-      if (p) { s += p.s; h += p.h; }
-    }
-    if (wind >= 1) { const wk = 'wind_' + wind; const p = this.confidence.penalties[wk]; if (p) { s += p.s; h += p.h; } }
-    if (rain) { s += this.confidence.penalties.rain.s; h += this.confidence.penalties.rain.h; }
-    if (clubDist && clubDist >= 170) { s += this.confidence.penalties.long_club.s; h += this.confidence.penalties.long_club.h; }
-    return { smart: Math.max(this.confidence.min, Math.min(100, s)), hero: Math.max(this.confidence.min, Math.min(100, h)) };
-  },
-  sortBag(bag) {
-    return bag.sort((a, b) => b.dist - a.dist);
-  }
+version:'1.0.1 Beta',
+bags:{
+'80s':[{name:'Driver',dist:240,on:true,teeOnly:true},{name:'3-Wood',dist:220,on:true},{name:'5-Wood',dist:195,on:true},{name:'3-Hybrid',dist:180,on:true},{name:'4-Hybrid',dist:170,on:true},{name:'5-Iron',dist:160,on:true},{name:'6-Iron',dist:150,on:true},{name:'7-Iron',dist:140,on:true},{name:'8-Iron',dist:130,on:true},{name:'9-Iron',dist:120,on:true},{name:'PW',dist:110,on:true},{name:'GW',dist:90,on:true},{name:'SW',dist:70,on:true}],
+'90s':[{name:'Driver',dist:220,on:true,teeOnly:true},{name:'3-Wood',dist:200,on:true},{name:'5-Wood',dist:180,on:true},{name:'4-Hybrid',dist:165,on:true},{name:'5-Hybrid',dist:155,on:true},{name:'6-Iron',dist:140,on:true},{name:'7-Iron',dist:130,on:true},{name:'8-Iron',dist:120,on:true},{name:'9-Iron',dist:110,on:true},{name:'PW',dist:100,on:true},{name:'GW',dist:80,on:true},{name:'SW',dist:65,on:true}],
+'100s':[{name:'Driver',dist:200,on:true,teeOnly:true},{name:'3-Wood',dist:180,on:true},{name:'5-Wood',dist:160,on:true},{name:'5-Hybrid',dist:145,on:true},{name:'6-Hybrid',dist:135,on:true},{name:'7-Iron',dist:120,on:true},{name:'8-Iron',dist:110,on:true},{name:'9-Iron',dist:100,on:true},{name:'PW',dist:90,on:true},{name:'GW',dist:75,on:true},{name:'SW',dist:55,on:true}],
+'110+':[{name:'Driver',dist:180,on:true,teeOnly:true},{name:'3-Wood',dist:160,on:true},{name:'5-Wood',dist:145,on:true},{name:'6-Hybrid',dist:130,on:true},{name:'7-Iron',dist:110,on:true},{name:'8-Iron',dist:100,on:true},{name:'9-Iron',dist:90,on:true},{name:'PW',dist:80,on:true},{name:'GW',dist:65,on:true},{name:'SW',dist:50,on:true}]
+},
+conditions:{
+tee:{label:'Tee',mod:0,group:'terrain',hasSub:true},fairway:{label:'Fairway',mod:0,group:'terrain'},
+lt_rough:{label:'Lt Rough',mod:3,group:'terrain'},dp_rough:{label:'Dp Rough',mod:7,group:'terrain'},
+bare_dirt:{label:'Bare Dirt',mod:0,group:'terrain'},fwy_bnk:{label:'Fwy Bnk',mod:7,group:'terrain'},
+grn_bnk:{label:'Grn Bnk',mod:5,group:'terrain',hasSub:true},divot:{label:'Divot',mod:3,group:'terrain'},
+up_lie:{label:'Up Lie',mod:0,group:'slope'},dn_lie:{label:'Dn Lie',mod:0,group:'slope'},
+below_ft:{label:'Below Ft',mod:0,group:'slope'},above_ft:{label:'Above Ft',mod:0,group:'slope'},
+trees:{label:'Trees',mod:0,group:'obstacle',hasSub:true},water:{label:'Water',mod:0,group:'obstacle',hasSub:true},
+lip:{label:'Lip',mod:0,group:'obstacle'}
+},
+subLabels:{
+tee_par3:'Tee · Par 3',tee_par45:'Tee · Par 4/5',
+trees_around_l:'Trees · Go Left (Draw)',trees_around_r:'Trees · Go Right (Fade)',
+trees_over:'Trees · Go Over',trees_punch:'Trees · Punch Out',
+grn_bnk_clean:'Bunker · Clean',grn_bnk_plugged:'Bunker · Plugged',grn_bnk_wet:'Bunker · Wet Sand',
+water_front_over:'Water Front · Over',water_front_layup:'Water Front · Lay Up',
+water_left:'Water Left',water_right:'Water Right',water_crossing:'Water Crossing'
+},
+windSpeeds:[
+{label:'0mph',mod:0},
+{label:'Light',modFace:3,modBack:-3,modCross:2},
+{label:'Moderate',modFace:7,modBack:-5,modCross:3},
+{label:'Strong',modFace:12,modBack:-8,modCross:5}
+],
+windDirections:['In Face','At Back','Cross Left','Cross Right'],
+elevation:[{label:'None',mod:0},{label:'▲ Slight',mod:4},{label:'▲ Steep',mod:10},{label:'▼ Slight',mod:-4},{label:'▼ Steep',mod:-10}],
+rainMod:5,
+advice:{
+_default:{
+ball:'Short irons (9,PW,GW,SW): middle of stance, right between your feet. Mid-irons (7,8): one ball forward of center, in line with your shirt logo. Long irons/hybrids: two balls forward. Woods: inside your front heel.',
+weight:'Irons: start 50/50, shift to 70-80% front foot as you swing through the ball. Hybrids/woods: stay 50/50 throughout.',
+swing:'Grip light — hold it like an open tube of toothpaste. Let arms hang straight down. For irons: hit DOWN on the ball to make it go UP. The divot comes AFTER the ball. For woods/hybrids: sweep it off the turf, level strike.',
+aim:'Center of the green. Pick a specific spot. Align feet, hips, and shoulders all parallel to your target line.',
+hands:'Hands ahead of the ball at address. Grip end of club points at your front hip.',
+remember:'Tension kills the swing. Grip light. Shoulders down and relaxed. Smooth back, accelerate through. Finish your swing.',
+smartText:'center green. Grip light, arms hanging, pick your target. Smooth swing, solid contact.',
+heroText:'at the pin. Same fundamentals, smaller target. Full commitment.',
+heroDanger:'Missing the pin means possibly missing the green. Center green is a 30-foot putt at worst — two putts.'
+},
+tee_par3:{
+ball:'Irons: tee it very low — flush with the top of the grass. Still hit DOWN on it. Woods/Hybrids: tee so 1/4 of ball is above the clubface. Sweep it — level strike.',
+weight:'Irons: start 50/50, shift to 70% front foot through impact. Woods: even, 50/50.',
+swing:'Smooth tempo. This is a perfect lie — don\'t swing harder than your practice swing. Grip light. Turn shoulders, don\'t sway hips. Head down until AFTER the ball is gone.',
+aim:'Center of the green. Not the pin. The CENTER.',
+hands:'Hands ahead. Shaft leaning slightly toward target.',
+remember:'Best lie you\'ll have all hole. Don\'t complicate it by swinging harder. Smooth is far.',
+smartText:'center green. Smooth tempo off the tee. Perfect lie — don\'t waste it swinging too hard.',
+heroText:'at the flag. Same smooth swing, tighter target. The lie is perfect — if you\'re going to attack, now is the time.',
+heroDanger:'Pin-seeking means missing the green if you miss. Center green means a putt no matter what.'
+},
+tee_par45:{
+ball:'Driver: inside front heel. Tee HIGH — half the ball above the top of the clubface. Lead shoulder slightly higher than trail shoulder. Woods: tee flush with the grass, slightly forward of center.',
+weight:'Driver: 60% on back foot at setup. Shift forward as you swing through. Head stays BEHIND the ball at impact. Woods: start 50/50, shift forward.',
+swing:'Driver: sweep UP through the ball — feel the club going up as it hits. Turn shoulders fully — don\'t sway hips side to side. Keep lead arm extended but relaxed. Follow through fully — arms high, chest facing target. Woods: smooth sweep off the tee.',
+aim:'Center of the fairway. It\'s 30-40 yards wide. Huge target.',
+hands:'Ten-finger grip: hands packed tight, working as one unit. Grip light — toothpaste tube.',
+remember:'The fairway wins the hole. Not distance. A ball in the fairway sets up everything next.',
+smartText:'to the fairway. Smooth tempo, grip light, turn your shoulders. Find the short grass.',
+heroText:'driver, full send. Tee it high, weight back, swing UP. Head behind the ball. Full turn, full finish.',
+heroDanger:'Driver is the longest and hardest to control. 3-Wood in the fairway beats driver in the trees. Every time.'
+},
+lt_rough:{
+ball:'Same position as a fairway shot. Don\'t change anything for light rough.',
+weight:'Start 50/50. Through impact, 60% front foot — just a touch more forward than a fairway shot.',
+swing:'Swing a bit more aggressively through impact. The grass grabs the clubface — you need speed to cut through. Grip a touch firmer.',
+aim:'Center green. Grass closes the face slightly, pulling ball left (right-handers). Aim a touch right.',
+hands:'Hands ahead of ball. Same as fairway.',
+remember:'One club more. Grass costs a few yards. Aim slightly right — rough closes the face.',
+smartText:'center green. Same as fairway, swing a bit harder through the grass. One club more. Aim a touch right.',
+heroText:'at the pin. Light rough is almost a fairway lie. Same setup, more commitment through.',
+heroDanger:'Light rough barely changes anything. The real danger is overthinking it and getting tense.'
+},
+dp_rough:{
+ball:'Move ball BACK one ball-width in stance. This steepens your angle to cut through thick grass.',
+weight:'65-70% front foot at address. Keep it there. Don\'t drift back.',
+swing:'Swing AGGRESSIVELY. Thick grass grabs the clubface HARD and tries to twist it closed. You need speed to power through. Hinge wrists more on backswing for steeper angle down to ball.',
+aim:'Aim RIGHT of target (right-handers). Deep grass grabs face and twists it closed, pulling ball LEFT. Aim 10-20 yards right.',
+hands:'Hands well ahead. Grip firmer — grass tries to twist the club.',
+remember:'Club up TWO. Grass kills distance. Aim right. Swing hard. Just advance the ball.',
+smartText:'center green. Ball back, weight forward, grip firm, swing HARD through the grass. Club up two. Aim right.',
+heroText:'at the pin from deep rough. Same setup but you need perfect contact. Almost no margin.',
+heroDanger:'Miss-hits from deep rough barely move. The grass wins and you advance 20-30 yards.'
+},
+bare_dirt:{
+ball:'Move back one ball-width. Zero grass under the ball — nothing to cushion a miss.',
+weight:'65% front foot. Keep it planted. Hit ball FIRST, then ground.',
+swing:'Hit DOWN firmly. Ball first, THEN ground scrapes after. If you hit behind the ball, club bounces off hard ground and the leading edge catches the middle — it shoots over the green. Grip down one inch.',
+aim:'Center green. Clean contact is the only priority.',
+hands:'Hands well ahead. Shaft leaning forward toward target.',
+remember:'Hard ground = zero forgiveness. Hit behind the ball and the club bounces. Ball back, hands forward, hit down.',
+smartText:'center green. Ball back, hands ahead, hit DOWN before the ground. Grip down one inch.',
+heroText:'at the pin from hard pan. Perfect ball-first contact gets you spin. Miss-hit is disaster.',
+heroDanger:'Fat shots on bare dirt = club bounces off surface = you blade it 50 yards over the green.'
+},
+fwy_bnk:{
+ball:'Center of stance or slightly back. MUST hit ball first — not sand.',
+weight:'60% front foot. Dig feet into sand about one inch for stability. Grip DOWN one inch to compensate for being lower.',
+swing:'THREE-QUARTER swing maximum. Smooth tempo. Ball first, then sand. Don\'t try to help ball up. Keep lower body quiet — sand is unstable, big weight shifts cause slipping.',
+aim:'Center green. Clean contact from a fairway bunker IS the win.',
+hands:'Hands ahead. Grip down one inch from top of club.',
+remember:'Ball first. NOT sand first. Sand before ball = 50+ yards lost instantly. Grip down. Dig in. Three-quarter. Ball first.',
+smartText:'center green from sand. Grip down, dig feet in, ball first, three-quarter swing. Control over power.',
+heroText:'at the flag from fairway sand. Full swing. Must pure it — any sand before impact kills the shot.',
+heroDanger:'Full swings from fairway bunkers are one of the hardest shots in golf. Three-quarter to center green is almost always smarter.'
+},
+grn_bnk_clean:{
+ball:'FORWARD — in line with front heel. Open stance: feet aim LEFT of target (right-handers). Body faces left, clubface faces target.',
+weight:'60% front foot. Keep it there throughout.',
+swing:'Open clubface BEFORE you grip it. Then grip. Swing along your foot line (aims left). Hit SAND 2 inches BEHIND ball. You\'re NOT hitting the ball — hitting the sand behind it. Sand explodes and throws ball up. ACCELERATE through — never slow down in a bunker.',
+aim:'Center of green. Ball pops up high, lands soft, stops quick.',
+hands:'Grip AFTER opening face. Light grip. Let club slide through sand.',
+remember:'Hit SAND, not ball. 2 inches behind. Sand launches ball. Accelerate through. The bounce on your wedge is designed for this.',
+smartText:'out of the bunker to center green. Open face, open stance, hit sand 2 inches behind ball. Accelerate. Let sand do the work.',
+heroText:'close to the pin. Same technique. Longer backswing = more distance. Shorter = less. Technique stays the same.',
+heroDanger:'Distance control from bunkers takes years. Getting OUT onto any part of the green is a great shot.'
+},
+grn_bnk_plugged:{
+ball:'Center or slightly back. NOT forward like a clean lie.',
+weight:'70% front foot. Lean into it.',
+swing:'SQUARE the clubface — do NOT open it. Opposite of clean lie. Pick club up steeply by hinging wrists hard. SLAM into sand close behind ball. Hit down HARD. Don\'t worry about follow-through — club might stop in sand.',
+aim:'Anywhere on the green is a WIN.',
+hands:'Hands ahead. Firm grip — slamming into heavy sand.',
+remember:'SQUARE face. NOT open. Key difference from clean lie. Steep swing, slam sand. Ball comes out LOW and RUNNING — plan for roll.',
+smartText:'out of plugged lie. Square face (not open), steep swing, slam sand close behind ball. Comes out low, runs a lot. Anywhere on green is great.',
+heroText:'toward the pin from plugged lie. Same technique. Aim to land short — ball will run to hole.',
+heroDanger:'Plugged lies are the most unpredictable shot. Sometimes pops out, sometimes doesn\'t. Getting out is the only goal.'
+},
+grn_bnk_wet:{
+ball:'Center or slightly back.',
+weight:'65% front foot.',
+swing:'Hit CLOSER to ball than dry sand — 1 inch behind instead of 2. Wet sand is HEAVY, doesn\'t splash. Need MORE speed. Swing harder than you think. Commit — slowing down in wet sand buries the club.',
+aim:'Center green. Wet sand makes distance unpredictable.',
+hands:'Firm grip. Powering through heavy sand.',
+remember:'Wet sand is heavy. Closer contact (1 inch not 2). More speed. Full commit. Slow down = club stuck = ball stays.',
+smartText:'out of wet sand onto green. Hit closer to ball, swing harder, commit fully. Wet sand punishes hesitation.',
+heroText:'at the pin from wet sand. Full speed, full commit.',
+heroDanger:'Wet sand is completely different from dry. Ball can come out screaming or not at all. Just get on the green.'
+},
+divot:{
+ball:'Back one or two ball-widths. Way back. Need steep angle to get under ball in the divot hole.',
+weight:'70% front foot. Planted.',
+swing:'Hit DOWN aggressively — punch ball into the ground. Steep angle gets club under ball. Don\'t scoop or help it up — that causes you to hit the back edge of the divot and skull it. Hit down, let loft lift it.',
+aim:'Center green. Ball comes out LOWER and HOTTER. Runs more on landing. Aim short of pin.',
+hands:'Hands well ahead. Shaft leaning strongly toward target.',
+remember:'Low, hot ball flight. Aim short, plan for run. The steep angle removes loft — 7-iron from divot acts like 5-iron in height.',
+smartText:'center green from divot. Ball back, hands ahead, punch down steeply. Lower flight, more roll.',
+heroText:'at the pin from divot. Same punch. Plan for ball to land short and run to flag.',
+heroDanger:'Thin shots from divots are very common. Either perfect or a line drive over the green.'
+},
+up_lie:{
+ball:'Slightly forward — uphill moves your low point forward.',
+weight:'Weight naturally falls back because of hill. Don\'t fight it. Lean INTO hill so spine is roughly perpendicular to slope.',
+swing:'Tilt shoulders to MATCH slope angle. If ground goes up-left, right shoulder drops. Swing ALONG the hill, following slope. Ball flies HIGHER and pulls LEFT (right-handers).',
+aim:'Aim RIGHT. Uphill makes ball go higher and curve left. Club UP one — extra height costs distance. Ball stops dead on landing (no roll).',
+hands:'Hands in line with ball or slightly ahead.',
+remember:'Shoulders match slope. Higher, shorter, pulls left. Club up. No roll — fly it the full distance.',
+smartText:'center green. Match shoulders to hill. Swing along slope. Club up — uphill eats distance. Aim right — pulls left.',
+heroText:'at the pin from uphill. Same slope setup. Aim right of pin, let natural left pull bring it back.',
+heroDanger:'Ball stops DEAD uphill. Zero roll. Must fly it the full distance to target.'
+},
+dn_lie:{
+ball:'BACK in stance — downhill moves low point backward.',
+weight:'Falls forward naturally. Let it. Keep moving toward target.',
+swing:'Shoulders MATCH slope — lead shoulder lower. Chase ball DOWN the hill with club after impact. Ball flies LOWER, pushes RIGHT (right-handers). Runs a LOT.',
+aim:'Aim LEFT. Lower flight, pushes right. Club DOWN one — lower flight adds distance from run.',
+hands:'Hands ahead. Shaft leans toward target.',
+remember:'Shoulders match slope. Low flight, lots of run, pushes right. Club down. Aim left. Land short, let it run.',
+smartText:'center green. Match shoulders to downhill. Swing along slope. Club down — ball runs. Aim left — pushes right.',
+heroText:'at the pin downhill. Low, running shot. Land short, let run bring it to flag.',
+heroDanger:'Low, fast-running shots. Easy to fly the green because ball doesn\'t check up.'
+},
+below_ft:{
+ball:'Center of stance.',
+weight:'On your heels. WIDEN stance for stability. You\'re reaching down for the ball.',
+swing:'Bend MORE from hips. Sit into legs like a barstool. Swing is more up-and-down than around body. Grip all the way to end of club for maximum reach.',
+aim:'Aim LEFT. Ball WILL go RIGHT (right-handers). Steeper slope = more right. Guaranteed.',
+hands:'Grip to end of club. Hands ahead.',
+remember:'WIDEN stance. Bend more. Aim LEFT. Ball WILL fade/push right. The steeper the slope, the further right.',
+smartText:'center green, aim LEFT. Widen stance, bend from hips, sit into legs. Ball will drift right — plan for it.',
+heroText:'at the pin, aiming left. Let natural rightward drift bring it back to target.',
+heroDanger:'Ball going right is guaranteed. Aim right AND it pushes right = double the miss.'
+},
+above_ft:{
+ball:'Center of stance.',
+weight:'On your toes — lean into uphill slope. Ball is closer to you.',
+swing:'Stand TALLER. Grip DOWN 1-2 inches — slope puts ball closer, full club length hits ground behind ball. Swing feels flatter, more around body.',
+aim:'Aim RIGHT. Ball WILL go LEFT (right-handers). Slope closes clubface creating draw/hook. Steeper = more hook.',
+hands:'Grip down 1-2 inches from top.',
+remember:'GRIP DOWN. Stand taller. Aim RIGHT. Ball WILL draw/hook LEFT. Aim left AND it hooks = serious trouble.',
+smartText:'center green, aim RIGHT. Grip down, stand taller, lean into slope. Ball will draw/hook left.',
+heroText:'at the pin, playing natural draw. Aim right of flag, let slope bring it back.',
+heroDanger:'Hook left is guaranteed. Aim left AND it hooks = way off target. Always aim right.'
+},
+trees_around_l:{
+ball:'Slightly back of center to help create inside-out path for a draw.',
+weight:'50/50. Don\'t change weight for a draw.',
+swing:'Point BODY (feet, hips, shoulders) RIGHT of tree — that\'s where ball starts. Point CLUBFACE at TARGET (left of tree). Swing along BODY line. Difference between body aim and face aim creates LEFT curve.',
+aim:'Body right of tree. Face at target. Ball starts right, curves left around obstacle.',
+hands:'Grip like you usually would. Don\'t manipulate face with hands — body/face mismatch creates curve.',
+remember:'Body right. Face at target. Swing body line. Ball curves LEFT. COMMIT — half-swings go straight into tree.',
+smartText:'draw left around tree. Body aims right of tree, clubface at target. Swing your body line — ball curves left.',
+heroText:'full draw to the green, curving left around tree. Same setup, full commitment to the shape.',
+heroDanger:'Not enough curve = tree. Too much curve = way left. Gap always looks bigger from behind the ball.'
+},
+trees_around_r:{
+ball:'Slightly forward of center for outside-in path creating a fade.',
+weight:'50/50.',
+swing:'Point BODY LEFT of tree. CLUBFACE at TARGET (right of tree). Swing along BODY line. Mismatch creates fade/slice curving RIGHT.',
+aim:'Body left. Face at target. Ball starts left, curves right.',
+hands:'Don\'t force curve with hands. Alignment does the work.',
+remember:'Body left. Face at target. Swing body. Ball curves RIGHT. Full commit.',
+smartText:'fade right around tree. Body left, clubface at target. Swing body line — ball curves right.',
+heroText:'full fade to the green, curving right around tree. Full send.',
+heroDanger:'No curve = tree. Too much = way right. Commit completely or pick a different shot.'
+},
+trees_over:{
+ball:'FORWARD — inside front heel. Maximum launch angle.',
+weight:'60% back foot. Stay BEHIND ball. Don\'t slide forward — that delofts and ball won\'t get high enough.',
+swing:'Full swing. Trust club LOFT to get ball up. Do NOT scoop or lift with hands — causes thin shots straight into tree. Swing through, let loft do the lifting.',
+aim:'Straight over tree. Give yourself clearance.',
+hands:'Hands even with ball (not ahead). Preserves loft.',
+remember:'Club loft lifts ball. Not your hands. If not confident you clear it, punch out sideways.',
+smartText:'over tree with high-lofted club. Ball forward, stay behind it, full swing. Trust loft.',
+heroText:'over tree AT the green. Need height AND distance. Full commitment.',
+heroDanger:'Ball doesn\'t get up fast enough = hits tree, drops to your feet.'
+},
+trees_punch:{
+ball:'BACK in stance — off back foot or close to it.',
+weight:'70% front foot. Planted.',
+swing:'HALF swing — hands to waist height, no higher. LOW finish — hands stop at waist. Ball comes out low, running. Use 7 or 8 iron.',
+aim:'WIDEST gap to fairway. Largest opening between trees. Safety only.',
+hands:'Hands well ahead. Firm grip.',
+remember:'Low and running. Widest gap. One shot sideways = bogey. Through the trees and hit = triple.',
+smartText:'punch to fairway. 7 or 8 iron, ball back, half swing, low finish. Widest gap. Fairway in one.',
+heroText:'driver stinger through the gap. Tee-height contact, sweeping blow, ball stays under branches. Full distance through the window.',
+heroDanger:'Trees are 90% air, but the 10% that\'s wood always wins. The gap is smaller than it looks.'
+},
+water_front_over:{
+ball:'Same position for whatever club you chose. Don\'t change setup because of water.',
+weight:'Same as the club dictates. Don\'t tighten up. Tension kills distance — over water, lost distance = wet ball.',
+swing:'FULL, COMMITTED swing. Pick target on GREEN past the water. Swing to that target. Don\'t think about water. Slowing down over water is the #1 cause of wet balls. Commit.',
+aim:'Center green. Past the water. Commit to getting ball to other side.',
+hands:'Same grip. Grip LIGHT — toothpaste tube. Tension is the enemy over water.',
+remember:'Can you carry with TWO clubs to spare? If carry is 150 and water is 140, only 10 yards margin — not enough. Club UP for 20+ yard margin. Can\'t reach with margin? LAY UP.',
+smartText:'over water with SAFE club — carries it with plenty of margin. Not exact-distance club. Smooth, committed swing.',
+heroText:'at the pin over water. Tighter club selection. Full commit — any slowing down and ball goes swimming.',
+heroDanger:'Exact-distance club over water needs PERFECT contact. One yard short = splash. Use more club.'
+},
+water_front_layup:{
+ball:'Same as a regular fairway shot.',
+weight:'Same as a regular fairway shot.',
+swing:'Smooth, controlled swing. You\'re hitting to a SPECIFIC distance — your favorite wedge yardage. If you love your pitching wedge from 90 yards, land it 90 yards out.',
+aim:'Specific spot in fairway that leaves your best wedge distance. Not just "short of water" — a SPECIFIC yardage.',
+hands:'Same as regular shot.',
+remember:'Lay up to your BEST wedge distance. 80-yard wedge from fairway is way easier than 30-yard pitch from just short of water.',
+smartText:'lay up to your best wedge distance. Smooth, controlled swing to that target. Crisp wedge from fairway beats wet ball.',
+heroText:'go for the green over water anyway. Full swing, full commitment, full risk.',
+heroDanger:'Laying up costs one shot. Water costs two (penalty + drop). The math is clear.'
+},
+water_left:{
+ball:'Same as a regular shot.',
+weight:'Same as a regular shot.',
+swing:'Same swing. Water is a MENTAL hazard here. Biggest danger is getting tense and pulling ball left toward water. Stay loose. Grip light.',
+aim:'Aim RIGHT — AWAY from water. Give yourself a cushion. Miss to the safe side. Right rough beats water.',
+hands:'Same grip. Don\'t tighten up.',
+remember:'Aim away from water. Miss to SAFE side. Tension and trying to guide the ball cause exactly the pull you\'re trying to avoid.',
+smartText:'center-right of green, away from water. Aim to miss safe. Loose grip, confident swing.',
+heroText:'at the pin even with water left. Trust your line. Tension pulls ball left toward water — stay loose.',
+heroDanger:'Pulls and hooks go in the water. Trying to guide ball away often causes exactly the pull you fear. Aim right, swing free.'
+},
+water_right:{
+ball:'Same as a regular shot.',
+weight:'Same as a regular shot.',
+swing:'Same swing. Don\'t try to guide ball away from water — guiding causes the push/slice toward water. Confident, free swing. Stay relaxed.',
+aim:'Aim LEFT — AWAY from water. Miss to safe side.',
+hands:'Light grip. Don\'t squeeze.',
+remember:'Aim away. Miss LEFT is safe. Trying to guide away from right side causes pushes and slices — exactly what puts it in water.',
+smartText:'center-left of green, away from water. Relaxed swing, don\'t guide. Left rough beats penalty.',
+heroText:'at the pin with water right. Free, relaxed swing. Tightening up causes the push you fear.',
+heroDanger:'Pushes and slices find water. More you try to guide away, more likely you push it in. Aim left, swing free.'
+},
+water_crossing:{
+ball:'Same position for the club.',
+weight:'Same as the club dictates.',
+swing:'Full, committed swing. MUST carry this water — no way around. Pick target on other side, commit. Full swing, full follow-through.',
+aim:'Over the water to safest landing past it.',
+hands:'Grip light. Stay relaxed. Full swing.',
+remember:'MUST carry. Use club with MARGIN. Carry is 150? Use a club you hit 170. Can\'t carry with two clubs to spare? Go sideways around it.',
+smartText:'over the water crossing. Club with plenty of margin. Full, committed swing. Don\'t cut it close.',
+heroText:'over crossing at the pin. Tight carry, tight target. Full send.',
+heroDanger:'No layup with crossing water. Carry it or don\'t. Make sure you have enough club.'
+},
+lip:{
+ball:'FORWARD — inside front heel. Maximum launch.',
+weight:'60% back foot. Stay behind ball to preserve loft.',
+swing:'Full, steep swing with most lofted club (lob or sand wedge). Get ball UP fast. Lip is ALWAYS taller than it looks from bottom.',
+aim:'Over the lip. Pick spot above lip.',
+hands:'Hands even with ball (not ahead). Preserves max loft.',
+remember:'Clear lip or repeat shot from same spot. More loft than you think. Lip is ALWAYS taller from down here.',
+smartText:'over lip with max loft. Height is ONLY priority. Distance doesn\'t matter if ball hits lip.',
+heroText:'over lip AND control distance to pin. Max loft, full swing, trust the height.',
+heroDanger:'Hit lip = ball rolls back to your feet. Use more loft than you think.'
+},
+chipping:{
+ball:'Low chip (lots of green): ball off BACK foot. High chip (over obstacle): ball off FRONT foot.',
+weight:'Weight on FRONT foot. 70% front. Keep it there the ENTIRE swing. Do NOT shift back.',
+swing:'Short backswing. ACCELERATE through ball — never slow down at impact (#1 chipping mistake). Think putt with a little wrist hinge. Follow through LOW and LEFT across your body (right-handers) — don\'t aim arms at target.',
+aim:'Pick specific landing spot on green. Ball flies to that spot, then rolls like a putt the rest of the way.',
+hands:'Hands FORWARD — shaft leans toward target. Critical.',
+remember:'Get ball on ground ROLLING like a putt as soon as possible. Rolling ball is easier to control. Use less loft when you can. Accelerate through.',
+smartText:'chip to center green. Weight forward, hands forward, accelerate through. Get it rolling ASAP.',
+heroText:'chip tight to pin. Same technique, tighter landing spot. Commit to landing zone.',
+heroDanger:'Tight pin with obstacle = higher shot, less roll. Ball forward, more loft, same acceleration.'
+},
+putting:{
+ball:'Center of stance. Eyes directly over ball.',
+weight:'Even, 50/50. Slight favor front foot is fine. Stay STILL — zero body movement.',
+swing:'Rock SHOULDERS — pendulum motion. Wrists and lower body completely still. Nothing moves except shoulders rocking. Smooth, even tempo back and through — same speed each direction. Head DOWN, LISTEN for ball to drop. Looking up early ruins stroke because shoulders open.',
+aim:'Speed dictates line. Get PACE right first, then line. Putt that rolls 2 feet past on a miss = right speed.',
+hands:'Light grip. Wrists locked — no wrist action. Shoulders only.',
+remember:'Speed first, line second. Head down, listen. Smooth tempo. Wrists dead still. Rock shoulders.',
+smartText:'center of hole. Read break, pick speed, rock shoulders. Head down and listen.',
+heroText:'aggressive line to make it. Same stroke, more pace. Die it in or charge the back — pick one, commit.',
+heroDanger:'Aggressive putting means aggressive comebacks if you miss. Give yourself a tap-in on the miss.'
+}
+},
+kickers:{
+_default:['The boring shot is the one your scorecard likes best.','Two putts from the middle beats three from the fringe.','Your scorecard doesn\'t remember which shot was exciting.','Center green. Every time.','Solid contact. That\'s the whole assignment.','The safe shot is the one you forget by the 19th hole.','A smooth swing beats a hard swing 18 out of 18.','The best shot you hit today will feel easy.','Aim small, miss small.','Trust your yardages. Swing smooth, don\'t force it.','Pick a specific target. Not "the green." A spot.'],
+tee_par3:['Perfect lie, big target. Don\'t overthink the gift.','The tee box can\'t trick you. The rest of the hole can.','Breathe. You chose this club for a reason.','The pin is a distraction. The green is the target.','Every par 3 green has a middle. That\'s your spot.','A two-putt par from center green counts the same as a tap-in birdie.','Tee it, trust it, swing smooth.','Your caddy says center green. Your ego says pin. Your caddy is right.'],
+tee_par45:['The fairway is 35 yards wide. Find it.','You don\'t win holes on the tee. You lose them there.','Driver goes further. Fairway wood goes straighter.','Trees are 90% air, but the wood always wins.','Nobody ever said "I wish I\'d tried to hit it further."','3-Wood in the fairway beats driver in the trees. Every time.','Fairway, approach, two putts. That\'s a good hole.','Your playing partners don\'t remember your tee shot. They remember your score.','The safe play off the tee sets up everything next.','The most important shot on a par 4 is the one that finds short grass.'],
+lt_rough:['It\'s rough, not a crime scene. You\'re fine.','One club more. That\'s all the grass costs you.','First cut is basically a fairway with attitude.','Same swing, slightly more commitment through impact.','Don\'t let the grass grab your confidence.','One extra club and a committed swing. That\'s the play.','Light rough is golf\'s way of saying "close enough."','Don\'t overthink light rough. It\'s barely a penalty.'],
+dp_rough:['The grass took your distance. Don\'t let it take your brain.','Get it out in one. Whole assignment.','Bogey from deep rough is a win. Double is what happens when you get ambitious.','Aim right. Grass closes the face. Every time.','The hero play from deep rough is the leading cause of big numbers.','Club up. Swing hard. Aim right. That\'s the recipe.','The ball is sitting down. Your expectations should too.','Advance to the fairway. That\'s winning from here.','Two shots to the green from rough is fine. One shot that stays in rough is not.','Your hybrid can\'t see the ball either.'],
+bare_dirt:['Ball first. Dirt first = club bounces = trouble.','Hard ground, hard truth: ball before ground.','No grass to save you. Precision or pain.','Grip down, hit down. Ground doesn\'t forgive.','Ball back, hands forward, hit down. Three thoughts.','Fat shots on hard ground become thin shots over the green.','The ball is sitting on concrete. Treat it that way.','Clean contact from bare dirt is a real skill. Today you learn it.'],
+fwy_bnk:['Ball first. Iron shot in a sandbox.','Grip down, dig in, ball first. Whole playbook.','Three-quarter swing. Control beats power in sand.','Sand before ball and you try again from same spot.','Every fairway bunker shot starts with: ball first.','Dig in. Grip down. Ball first. Three things.','The sand is testing your discipline. Pass the test.','Three-quarter from sand that finds the green > full swing that stays in bunker.'],
+grn_bnk:['Hit the sand hard. It started this fight.','The sand does the work. You just need speed.','Open face, open stance, swing like you mean it.','Slow down in the bunker and you stay in the bunker.','The bounce on your wedge was DESIGNED for this.','You\'re not hitting the ball. You\'re hitting sand. Sand moves the ball.','A bunker shot onto any part of the green is a great shot.','Accelerate. That\'s the whole bunker thought.','The lip is always taller than you think.','Every pro hits bunkers the same way. Open, behind, through.'],
+divot:['Someone else\'s divot, your problem. Ball back, dig it out.','Lower trajectory, more run. Aim short.','If golf had a "not fair" rule, divots would be exhibit A.','Steep and aggressive. That\'s divot golf.','Plan for run. Coming in hot and low.','Ball back, hands ahead, steep swing. Three moves.','The only way out is down and through.'],
+up_lie:['Hill is eating your distance. Feed it an extra club.','Lean into the slope. Match it.','Uphill = higher flight, dead stop. Fly it all the way.','Shoulders match slope. That\'s the entire thought.','Club up. Uphill takes 5-10 yards.','Ball stops dead on landing. Plan for zero roll.','The ball goes higher and left. Aim right, club up.'],
+dn_lie:['Low and running. Aim short, let gravity help.','Gravity is undefeated. Don\'t fight the slope.','Coming out hot and low. Plan for the run.','Chase ball down the hill with the club.','Club down. Slope adds distance you didn\'t ask for.','Ball back, shoulders match slope. Two thoughts.','Ball runs 20% further than expected. Aim shorter.'],
+below_ft:['Ball is going right. Aim left. That\'s the secret.','Gravity wins every argument. Aim left.','Widen. Bend. Aim left. Three words.','Fade is guaranteed. Plan for it.','Sit into it like a barstool. Reach for the ball.','Everything pushes right. Let it — aim left.','Your knees work harder than your arms here.'],
+above_ft:['Going left. Aim further right than feels comfortable.','Choke up, aim right, trust the draw.','Slope closes your clubface. Hook is guaranteed.','Stand tall, grip short. Hill does half the work.','Grip down so you don\'t chunk it into the hill.','Aim right of right. Then more right.','Free draw spin from the slope. Use it — aim right.'],
+trees:['Sideways to the fairway. One shot lost, not three.','Hero shot costs three strokes. Safe play costs one.','Trees are 90% air, but the wood always wins.','Gap looks bigger from behind the ball.','One swing to fairway, full shot to green. That\'s a bogey.','The forest doesn\'t have a highlight reel.','Punch outs win tournaments. Hero shots win stories nobody believes.','Every tree has been hit by someone who thought they could thread it.','Ball in fairway > three in the trees.','Bogey you can live with. Triple haunts you.'],
+water:['Golf balls don\'t float. Two clubs of margin or lay up.','Splash is louder than you think.','Crisp wedge from fairway beats wet long iron.','Slowing down over water is how balls learn to swim.','Ego says go. Wallet says balls cost $4 each.','Water doesn\'t care about your feelings. Use enough club.','Tension kills distance. Water creates tension. Breathe.','Two clubs margin over water. That\'s the rule.','Penalty from water turns par into double. Layup turns par into bogey.','Full commit or lay up. No middle ground.','Water is a mental hazard. Your swing doesn\'t know it\'s there.','Drop zone is never where you want to be.'],
+lip:['Lip is non-negotiable. Clear it or repeat.','Get it OUT first. CLOSE second.','More loft than you think. Always taller from down here.','Distance doesn\'t matter if ball hits lip.','Max loft, full swing, max height. Distance is secondary.','Hit lip = ball rolls back to your feet.','Height first. Everything else is bonus.'],
+chipping:['Get ball on ground rolling ASAP.','Rolling ball is easier to control than flying ball.','Weight forward. Hands forward. Accelerate through.','Landing spot first, then let it roll like a putt.','Decelerating is the #1 chipping mistake. Commit through.','Less loft when you can. More when you must.','Bad chip to middle of green > great chip attempt that doesn\'t make it.','Follow through LOW and LEFT. Don\'t aim arms at target.'],
+putting:['Speed dictates line. Pace first.','Head down. Listen for it.','Rock shoulders. Nothing else moves.','Smooth tempo. Same speed back and through.','2 feet past on a miss = right speed.','Read the break. Ball goes to the low side.','Wrists dead still. Shoulders only.','Two putts from anywhere on green is never bad.']
+},
+welcomes:[
+{silver:'New round. Clean slate.',copper:'Same mistakes are optional.'},
+{silver:'18 holes. One shot at a time.',copper:'Scorecard only remembers the total.'},
+{silver:'Breathe. Grip light. Pick a target.',copper:'Everything else is noise.'},
+{silver:'You brought the clubs.',copper:'Let\'s see who wins.'},
+{silver:'Every hole starts at zero.',copper:'Keep it that way as long as possible.'},
+{silver:'The course doesn\'t know your handicap.',copper:'Play smarter than your number.'},
+{silver:'You don\'t have to be great today.',copper:'You just have to be smart.'},
+{silver:'Good golf is boring golf.',copper:'Let\'s be boring together.'},
+{silver:'The caddy is ready.',copper:'Are you?'},
+{silver:'Fairways and greens.',copper:'Everything else is optional.'},
+{silver:'Grip light. Head down. Smooth tempo.',copper:'That covers about 80% of it.'},
+{silver:'Your swing is your swing.',copper:'Your decisions are where we come in.'}
+],
+confessionalKickers:{
+allSmart:['Zero hero shots. Zero drama. The caddy is impressed.','You listened every time you asked. Rarer than you think.','All smart, all day. Boring golfer wins.','Perfect discipline. Caddy has nothing to complain about.'],
+someHero:['How\'d that work out?','The caddy tried to warn you.','Bold choices were made. Results may vary.','You asked the caddy then did the opposite. Classic.'],
+manyHero:['Caddy is questioning your commitment to listening.','Multiple hero attempts. Ego was in charge today.','You asked a lot. Listened... less.','The gap between knowing and doing.'],
+lowUsage:['Everyone starts somewhere. Open the app more.','Imagine if you asked on every trouble shot.','One consultation. One smart decision. Build from there.']
+},
+flexKickers:{
+perfect:['{smart} shots. {smart} times I listened. Discipline.','{smart} for {smart}. My ego took the day off. — Caddy Logic'],
+withHero:['{total} shots. {smart} smart, {hero} hero. My caddy has notes.','I listened {smart} out of {total} times. No comment on the rest.']
+},
+roasts:[
+'Consulted Caddy Logic {total} times. Listened {smart}. That hero shot? Don\'t ask.',
+'My caddy app said center green. I said "I can reach that pin." I could not.',
+'Downloaded @CaddyLogic. "How\'d that work out?" is now my least favorite question.',
+'Caddy Logic said lay up. I said "I can carry the water." The water said no.',
+'{total} shots. Caddy was right {smart} times. My ego was right... still calculating.',
+'Caddy app said punch out. I went through the trees. Trees: 1. Me: 0.'
+],
+everySwing:'Grip light — like an open tube of toothpaste. Arms hang straight down. Pick a specific target. Feet, hips, shoulders parallel to target line. Head down. Smooth back, accelerate through. Finish your swing.',
+privacyPolicy:'Caddy Logic collects zero data. Everything stays on your device.\n\nNo accounts. No sign-ups. No tracking. No analytics. No ads. No data sold.\n\nYour club distances, shot history, and round data are stored locally on your phone. Clear your browser data and it\'s gone.\n\nWe don\'t know who you are, where you play, or what you shoot. By design.\n\nYour caddy, your data.',
+termsOfService:'Caddy Logic provides golf strategy suggestions for recreational use only.\n\nNot a substitute for professional instruction. General guidance for common situations.\n\nNot approved for sanctioned tournament play per USGA Rule 4.3.\n\nUse at your own discretion.\n\nKnow the play. Make the call.',
+confidence:{baseSmart:90,baseHero:55,penalties:{lt_rough:{s:-3,h:-5},dp_rough:{s:-12,h:-22},bare_dirt:{s:-5,h:-12},fwy_bnk:{s:-10,h:-20},grn_bnk:{s:-8,h:-15},divot:{s:-5,h:-10},up_lie:{s:-3,h:-5},dn_lie:{s:-5,h:-10},below_ft:{s:-8,h:-15},above_ft:{s:-5,h:-10},trees:{s:-10,h:-25},water:{s:-5,h:-18},lip:{s:-8,h:-20},wind_1:{s:-2,h:-3},wind_2:{s:-3,h:-6},wind_3:{s:-8,h:-14},rain:{s:-3,h:-5},long_club:{s:-3,h:-8}},min:8},
+getKicker(key){const p=this.kickers[key]||this.kickers._default;return p[Math.floor(Math.random()*p.length)];},
+getWelcome(){return this.welcomes[Math.floor(Math.random()*this.welcomes.length)];},
+// FIND CLUB — Smart Play: NEVER driver off non-tee
+findClub(bag,dist,isTee){
+const active=bag.filter(c=>c.on&&(isTee||!c.teeOnly)).sort((a,b)=>b.dist-a.dist);
+if(!active.length)return null;
+let best=null;
+for(let i=active.length-1;i>=0;i--){if(active[i].dist>=dist){best=active[i];break;}}
+if(!best)best=active[0];
+return best;
+},
+// HERO CLUB — bold but not stupid. 1-2 clubs more aggressive. CAN include driver for punch/stinger.
+findHeroClub(bag,smartClub,dist,isTee,isPunch){
+const active=bag.filter(c=>c.on).sort((a,b)=>b.dist-a.dist);// hero ignores teeOnly
+const smartIdx=active.findIndex(c=>c.name===smartClub.name);
+// For punch outs, hero could be a driver stinger or longest club
+if(isPunch)return active[0];
+// Otherwise go 1-2 clubs more aggressive (shorter distance but riskier from this lie)
+// Actually hero should be the club that REACHES the green from further — so go 1-2 longer
+if(smartIdx>0)return active[smartIdx-1];// one club longer
+if(smartIdx===0)return active[0];// already the longest
+return smartClub;
+},
+calcConfidence(conds,wind,rain,clubDist){
+let s=this.confidence.baseSmart,h=this.confidence.baseHero;
+for(const c of conds){const p=this.confidence.penalties[c];if(p){s+=p.s;h+=p.h;}}
+if(wind>=1){const wk='wind_'+wind;const p=this.confidence.penalties[wk];if(p){s+=p.s;h+=p.h;}}
+if(rain){s+=this.confidence.penalties.rain.s;h+=this.confidence.penalties.rain.h;}
+if(clubDist&&clubDist>=170){s+=this.confidence.penalties.long_club.s;h+=this.confidence.penalties.long_club.h;}
+return{smart:Math.max(this.confidence.min,Math.min(100,s)),hero:Math.max(this.confidence.min,Math.min(100,h))};
+},
+sortBag(bag){return bag.sort((a,b)=>b.dist-a.dist);},
+getWindMod(speed,dir){
+if(speed===0)return 0;
+const w=this.windSpeeds[speed];
+if(dir==='In Face')return w.modFace;
+if(dir==='At Back')return w.modBack;
+return w.modCross;
+}
 };
-if (typeof module !== 'undefined') module.exports = CL;
+if(typeof module!=='undefined')module.exports=CL;
