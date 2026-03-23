@@ -10,14 +10,15 @@
 function draw(id,s){
   const c=document.getElementById(id),x=c.getContext('2d');
   x.fillStyle='#000';x.fillRect(0,0,s,s);
-  const g=x.createLinearGradient(s*.2,0,s*.8,s);
+  const g=x.createLinearGradient(s*.15,0,s*.85,s);
   g.addColorStop(0,'#A06030');g.addColorStop(.3,'#E8A878');g.addColorStop(.5,'#D4845A');g.addColorStop(.7,'#EEBB90');g.addColorStop(1,'#A06030');
-  const pad=s*.08,bx=pad,by=pad,bw=s-pad*2,bh=s-pad*2;
-  x.strokeStyle='#D4845A';x.lineWidth=s*.02;x.strokeRect(bx,by,bw,bh);
+  // 15% safe zone padding on all sides for Apple rounded corners
+  const pad=s*.15,bx=pad,by=pad,bw=s-pad*2,bh=s-pad*2;
+  x.strokeStyle='#D4845A';x.lineWidth=s*.018;x.strokeRect(bx,by,bw,bh);
   x.fillStyle=g;x.textAlign='center';x.textBaseline='middle';
-  x.font=`700 ${s*.19}px -apple-system,"SF Pro Display","Helvetica Neue",sans-serif`;
-  x.fillText('CADDY',s/2,s/2-s*.1);
-  x.fillText('LOGIC',s/2,s/2+s*.1);
+  x.font=`700 ${s*.155}px -apple-system,"SF Pro Display","Helvetica Neue",sans-serif`;
+  x.fillText('CADDY',s/2,s/2-s*.09);
+  x.fillText('LOGIC',s/2,s/2+s*.09);
 }
 draw('c192',192);draw('c512',512);
 function dl(id,n){const c=document.getElementById(id),a=document.createElement('a');a.download=n;a.href=c.toDataURL('image/png');a.click();}
