@@ -1,7 +1,7 @@
 {
   "name": "Caddy Logic",
   "short_name": "Caddy Logic",
-  "description": "Know the play. Make the call. Shot mechanics, setup cues, and club strategy for every lie and condition.",
+  "description": "Know the play. Make the call.",
   "start_url": "./",
   "display": "standalone",
   "orientation": "portrait",
