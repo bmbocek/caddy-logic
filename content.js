@@ -5,7 +5,7 @@
 // Smart Play = safe mechanics. Let It Eat = bold but not stupid.
 
 const CL = {
-version: '1.0.3 Beta',
+version: '1.0.4 Beta',
 
 // =============================================
 // BAGS
@@ -571,7 +571,7 @@ findClub(bag,dist,isTee){
 
 // Hero club — bold but not stupid. 1-2 clubs more aggressive. CAN use driver for punch stinger.
 findHeroClub(bag,smartClub,dist,isTee,isPunch){
-  const active=bag.filter(c=>c.on).sort((a,b)=>b.dist-a.dist);
+  const active=bag.filter(c=>c.on&&(isTee||isPunch||!c.teeOnly)).sort((a,b)=>b.dist-a.dist);
   if(isPunch)return active[0]; // driver stinger for hero punch
   const smartIdx=active.findIndex(c=>c.name===smartClub.name);
   if(smartIdx>0)return active[smartIdx-1]; // one club longer/more aggressive
