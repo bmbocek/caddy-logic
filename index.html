@@ -1,342 +1,399 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#000000">
-  <title>Caddy Logic</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#000000">
+<title>Caddy Logic</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="app">
 
-  <!-- ONBOARDING -->
-  <div id="onboarding" class="onboarding hidden">
-    <div id="ob-1" class="ob-screen">
-      <div style="text-align:center;margin-bottom:28px">
-        <div class="bib" style="display:inline-block;padding:6px 18px;margin-bottom:12px"><span class="bib-text mc">CADDY LOGIC</span></div>
-        <p style="font-size:14px;margin-top:10px;color:var(--text)">Know the play. Make the call.</p>
-      </div>
-      <div style="width:100%;margin-bottom:20px">
-        <label class="ob-input-label">YOUR FIRST NAME</label>
-        <input id="ob-name" class="ob-input" type="text" placeholder="Name" autocomplete="off" maxlength="20">
-        <div class="ob-input-hint">For your personalized Flex Screen shares</div>
-      </div>
-      <div style="width:100%;margin-bottom:24px">
-        <label class="ob-input-label">YOUR SWING</label>
-        <div style="display:flex;gap:8px">
-          <button class="ob-option selected" data-hand="right" onclick="selectHand(this)" style="flex:1;justify-content:center;flex-direction:column;align-items:center"><div class="ob-option-label" style="color:var(--green)">Right</div><div class="ob-option-sub">handed</div></button>
-          <button class="ob-option" data-hand="left" onclick="selectHand(this)" style="flex:1;justify-content:center;flex-direction:column;align-items:center"><div class="ob-option-label" style="color:var(--text-dimmer)">Left</div><div class="ob-option-sub">handed</div></button>
-        </div>
-      </div>
-      <button class="btn-primary" onclick="obNext(1)">NEXT</button>
-      <div class="ob-dots"><div class="ob-dot active"></div><div class="ob-dot inactive"></div><div class="ob-dot inactive"></div><div class="ob-dot inactive"></div></div>
-      <div style="font-size:8px;color:#333;text-align:center;margin-top:8px">Shot mechanics · Setup cues · Club strategy</div>
-    </div>
-    <div id="ob-2" class="ob-screen hidden">
-      <div style="text-align:center;margin-bottom:24px">
-        <p style="font-size:22px;line-height:1.4;color:var(--text)">What do you normally shoot?</p>
-        <p style="font-family:var(--serif);font-size:13px;font-style:italic;margin-top:6px" class="mc">No judgment. The caddy needs to know.</p>
-      </div>
-      <div style="width:100%;margin-bottom:20px" id="ob-range-options">
-        <button class="ob-option" data-range="80s" onclick="selectRange(this)"><div><div class="ob-option-label" style="color:var(--text-dimmer)">80s</div><div class="ob-option-sub">Single digit handicap</div></div><div class="ob-radio"></div></button>
-        <button class="ob-option" data-range="90s" onclick="selectRange(this)"><div><div class="ob-option-label" style="color:var(--text-dimmer)">90s</div><div class="ob-option-sub">Mid handicap</div></div><div class="ob-radio"></div></button>
-        <button class="ob-option selected" data-range="100s" onclick="selectRange(this)"><div><div class="ob-option-label" style="color:var(--green)">100s</div><div class="ob-option-sub">High handicap</div></div><div class="ob-radio"></div></button>
-        <button class="ob-option" data-range="110+" onclick="selectRange(this)"><div><div class="ob-option-label" style="color:var(--text-dimmer)">110+</div><div class="ob-option-sub">Still having fun out there</div></div><div class="ob-radio"></div></button>
-      </div>
-      <button class="btn-primary" onclick="obNext(2)">NEXT</button>
-      <div class="ob-dots"><div class="ob-dot active"></div><div class="ob-dot active"></div><div class="ob-dot inactive"></div><div class="ob-dot inactive"></div></div>
-    </div>
-    <div id="ob-3" class="ob-screen hidden">
-      <div style="text-align:center;padding:12px 0 10px">
-        <p style="font-size:20px;color:var(--text)">Your bag is loaded.</p>
-        <p style="font-family:var(--serif);font-size:12px;font-style:italic;margin-top:4px" class="mc">Defaults for <span id="ob-range-label">100s</span>. Adjust anytime in My Bag.</p>
-      </div>
-      <div id="ob-bag-list" style="flex:1;overflow-y:auto;border:1px solid #222;border-radius:4px;padding:6px 12px;margin-bottom:10px"></div>
-      <button class="btn-primary" onclick="obNext(3)" style="margin-bottom:6px">SET MY DISTANCES — 60 SECONDS</button>
-      <button class="btn-secondary" onclick="obSkipBag()">Use defaults — go play</button>
-      <div class="ob-dots"><div class="ob-dot active"></div><div class="ob-dot active"></div><div class="ob-dot active"></div><div class="ob-dot inactive"></div></div>
-      <div style="font-size:8px;color:#333;text-align:center;margin-top:6px">Not approved for sanctioned tournament play per USGA Rule 4.3</div>
-    </div>
-    <div id="ob-4" class="ob-screen hidden">
-      <div style="text-align:center;margin-bottom:28px">
-        <div class="bib" style="display:inline-block;padding:6px 18px;margin-bottom:14px"><span class="bib-text mc">CADDY LOGIC</span></div>
-        <p style="font-size:22px;line-height:1.4;color:var(--text)">You're set, <span id="ob-confirm-name">Golfer</span>.</p>
-        <p style="font-family:var(--serif);font-size:14px;font-style:italic;margin-top:6px" class="mc">Your caddy is ready when you are.</p>
-      </div>
-      <div style="width:100%;margin-bottom:20px" id="ob-confirm-list"></div>
-      <button class="btn-primary" onclick="obFinish()">LET'S PLAY</button>
-      <div class="ob-dots"><div class="ob-dot active"></div><div class="ob-dot active"></div><div class="ob-dot active"></div><div class="ob-dot active"></div></div>
-    </div>
-  </div>
-
-  <!-- MAIN APP -->
-  <div id="main-app" class="hidden" style="display:flex;flex-direction:column;height:100%">
-    <div class="safe-top"></div>
-    <!-- Banner -->
-    <div id="banner" class="banner">
-      <div class="banner-left">
-        <div class="hamburger" onclick="openMenu()"><div></div><div></div><div></div></div>
-        <div class="hole-counter" onclick="openHolePicker()">
-          <svg width="12" height="14" viewBox="0 0 9 11"><line x1="1.5" y1=".5" x2="1.5" y2="10" stroke="var(--green)" stroke-width="1" stroke-linecap="round"/><path d="M1.5.5 L7 2 L1.5 3.5" fill="var(--green)" opacity=".7"/></svg>
-          <span id="hole-num" class="hole-num ms">1</span>
-          <span class="hole-plus" onclick="event.stopPropagation();advanceHole()">+</span>
-        </div>
-      </div>
-      <!-- CADDY LOGIC bib — tappable, returns to input -->
-      <div class="bib bib-logo" onclick="goToInput()"><span class="bib-text mc" style="font-size:11px">CADDY LOGIC</span></div>
-      <div class="banner-right">
-        <div id="wind-btn" class="weather-btn" onclick="cycleWind()">
-          <svg id="wind-icon" width="14" height="14" viewBox="0 0 14 14"><path d="M1 7 Q4 5 7 7 Q10 9 13 7" fill="none" stroke="#666" stroke-width="1.3" stroke-linecap="round"/></svg>
-          <span id="wind-label" class="wind-label" style="color:#888">0mph</span>
-        </div>
-        <div id="weather-btn" class="weather-btn" onclick="toggleWeather()">
-          <svg id="weather-icon" width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="3" fill="none" stroke="var(--gold)" stroke-width="1.1"/><line x1="7" y1="1" x2="7" y2="3" stroke="var(--gold)" stroke-width=".9"/><line x1="7" y1="11" x2="7" y2="13" stroke="var(--gold)" stroke-width=".9"/><line x1="1" y1="7" x2="3" y2="7" stroke="var(--gold)" stroke-width=".9"/><line x1="11" y1="7" x2="13" y2="7" stroke="var(--gold)" stroke-width=".9"/></svg>
-        </div>
-      </div>
-    </div>
-
-    <!-- Screen container -->
-    <div id="screen-container" style="flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative">
-      <!-- INPUT -->
-      <div id="screen-input" class="screen">
-        <div class="yardage-area">
-          <div class="yardage-row">
-            <button class="yrd-adjust" onclick="adjustYard(-1)">−</button>
-            <div><div id="yardage-num" class="yardage-num mg" onclick="openKeypad()">150</div><div class="yardage-label">YARDS · tap to type</div></div>
-            <button class="yrd-adjust" onclick="adjustYard(1)">+</button>
-          </div>
-          <div class="quick-jumps">
-            <button class="qj-btn" onclick="setYard(75)">75</button><button class="qj-btn" onclick="setYard(100)">100</button><button class="qj-btn" onclick="setYard(125)">125</button><button class="qj-btn active" onclick="setYard(150)">150</button><button class="qj-btn" onclick="setYard(175)">175</button><button class="qj-btn" onclick="setYard(200)">200</button><button class="qj-btn" onclick="setYard(225)">225</button>
-          </div>
-          <button class="skip-btn" onclick="skipDistance()">Skip — I don't know</button>
-          <div class="elev-row">
-            <span class="elev-label">ELEV<br>skip if unsure</span>
-            <button class="elev-btn" data-mod="4" onclick="toggleElev(this)">▲+4</button><button class="elev-btn" data-mod="10" onclick="toggleElev(this)">▲+10</button><button class="elev-btn" data-mod="-4" onclick="toggleElev(this)">▼-4</button><button class="elev-btn" data-mod="-10" onclick="toggleElev(this)">▼-10</button>
-          </div>
-        </div>
-        <div class="conditions-area"><div class="cond-row" id="terrain-row"></div><div class="cond-row" id="slope-row"></div></div>
-        <button class="btn-primary" onclick="whatsMyPlay()" style="margin:4px 0">WHAT'S MY PLAY?</button>
-      </div>
-
-      <!-- OUTPUT -->
-      <div id="screen-output" class="screen hidden">
-        <div class="trust-row" onclick="goToInput()">
-          <div style="display:flex;align-items:baseline"><span id="out-yardage" class="trust-yardage ms">150</span><span class="trust-yds">yds</span></div>
-          <div id="out-mods" class="trust-mods"></div>
-          <div style="display:flex;align-items:baseline"><span class="trust-eq">=</span><span id="out-adjusted" class="trust-total mg">150</span></div>
-        </div>
-        <!-- Situation summary — Fix #10 -->
-        <div id="situation-summary" class="situation-summary"></div>
-        <div class="club-call"><div id="out-club" class="club-name mg">7-IRON</div></div>
-        <div class="cards-row">
-          <div class="card-wrap card-smart" onclick="flipCard(this)"><div class="card-inner" id="card-smart-inner">
-            <div class="card-front"><div class="card-header"><span class="card-header-text" style="color:var(--silver)">SMART PLAY</span><div class="conf-bar"><div id="conf-smart" class="conf-fill green" style="width:80%"></div></div></div><div class="card-body"><p class="card-text"><span id="smart-text" class="ms"></span> <span id="smart-kicker" class="card-kicker mc"></span></p></div><div class="card-footer">Tap to flip for full setup</div></div>
-            <div class="card-back"><div class="setup-header mg">FULL SETUP</div><div class="setup-body" id="smart-setup"></div></div>
-          </div></div>
-          <div class="card-wrap card-hero" onclick="flipCard(this)"><div class="card-inner" id="card-hero-inner">
-            <div class="card-front"><div class="card-header"><span class="card-header-text" style="color:var(--copper)">LET IT EAT</span><div class="conf-bar"><div id="conf-hero" class="conf-fill red" style="width:30%"></div></div></div><div class="card-body"><p class="card-text"><span id="hero-text" class="ms"></span> <span id="hero-kicker" class="card-kicker mc"></span></p></div><div class="card-footer">Tap to flip for full setup</div></div>
-            <div class="card-back"><div class="setup-header mc">FULL SETUP</div><div class="setup-body" id="hero-setup"></div></div>
-          </div></div>
-        </div>
-        <div class="commit-area">
-          <button class="btn-primary" onclick="commitSmart()">COMMIT TO SMART PLAY</button>
-          <button class="btn-hero" onclick="commitHero()">LET IT EAT</button>
-        </div>
-      </div>
-
-      <!-- MY BAG -->
-      <div id="screen-bag" class="screen hidden">
-        <div class="btn-back" onclick="goToInput()">← Back</div>
-        <div class="bag-header"><div><div class="bag-title mg">My Bag</div><div class="bag-subtitle">Tap name to rename · Tap distance to type · ±5 per tap</div></div><button class="add-club-btn" onclick="addClub()">+ Add</button></div>
-        <div id="bag-list" class="bag-list"></div>
-        <div class="lefty-row"><span class="ms">Left-Handed</span><div id="lefty-toggle" class="toggle off" onclick="toggleLefty()"><div class="toggle-dot"></div></div></div>
-      </div>
-
-      <!-- ROUND SETTINGS -->
-      <div id="screen-settings" class="screen hidden">
-        <div class="btn-back" onclick="goToInput()">← Back</div>
-        <div style="padding:8px 0"><span style="font-size:20px;font-weight:600" class="ms">Round Settings</span></div>
-        <div class="section-label">CURRENT ROUND</div>
-        <div class="row"><span class="row-label ms">Course</span><input id="set-course" class="row-input" type="text" placeholder="Course name" onchange="updateCourse(this.value)"></div>
-        <div id="recent-courses-area"></div>
-        <div class="row"><span class="row-label ms">Current Hole</span><span id="set-hole" class="row-value mg">1</span></div>
-        <div class="row"><span class="row-label ms">Shots Logged</span><span id="set-shots" class="row-value mg">0</span></div>
-        <div class="section-label">CONDITIONS</div>
-        <div class="row"><span class="row-label ms">Temperature</span><div class="temp-group"><button class="temp-btn hot" onclick="setTemp('hot',this)">Hot</button><button class="temp-btn mild active" onclick="setTemp('mild',this)">Mild</button><button class="temp-btn cold" onclick="setTemp('cold',this)">Cold</button></div></div>
-        <div class="row"><span class="row-label ms">Show Every Swing basics</span><div id="swing-toggle" class="toggle on" onclick="toggleEverySwing()"><div class="toggle-dot"></div></div></div>
-        <div style="flex:1"></div>
-        <button class="btn-danger" onclick="endRound()" style="margin-bottom:6px">END ROUND</button>
-        <div style="font-size:10px;color:var(--text-dimmer);text-align:center;margin-bottom:8px">Ends round and opens Round Recap</div>
-      </div>
-
-      <!-- SHOT HISTORY -->
-      <div id="screen-history" class="screen hidden">
-        <div class="btn-back" onclick="goToInput()">← Back</div>
-        <div style="padding:8px 0"><span style="font-size:20px;font-weight:600" class="ms">Shot History</span></div>
-        <div id="history-list" style="flex:1;overflow-y:auto"></div>
-      </div>
-
-      <!-- DISCIPLINE INDEX -->
-      <div id="screen-discipline" class="screen hidden">
-        <div class="btn-back" onclick="goToInput()">← Back</div>
-        <div style="padding:8px 0"><span style="font-size:20px;font-weight:600" class="mg">Discipline Index</span></div>
-        <div id="disc-stats" class="stat-cards"></div>
-        <div id="disc-rounds" style="flex:1;overflow-y:auto"></div>
-        <button class="btn-primary" onclick="showScreen('share')" style="margin:8px 0">GENERATE FLEX SCREEN</button>
-      </div>
-
-      <!-- SHARE -->
-      <div id="screen-share" class="screen hidden">
-        <div class="btn-back" onclick="goToInput()">← Back</div>
-        <div style="padding:8px 0"><span style="font-size:20px;font-weight:600" class="mg">Share & Roast</span><p style="font-family:var(--serif);font-size:12px;font-style:italic;margin-top:4px" class="mc">Flex your discipline. Roast your buddy.</p></div>
-        <div id="share-content" style="flex:1;overflow-y:auto"></div>
-        <button class="btn-primary" onclick="goToInput()" style="margin:8px 0">BACK TO HOME</button>
-      </div>
-
-      <!-- FEEDBACK -->
-      <div id="screen-feedback" class="screen hidden">
-        <div class="btn-back" onclick="goToInput()">← Back</div>
-        <div style="padding:8px 0"><span style="font-size:20px;font-weight:600" class="ms">Tell us what to fix.</span><p style="font-family:var(--serif);font-size:12px;font-style:italic;margin-top:4px" class="mc">Wrong advice? Missing club? We want to hear it.</p></div>
-        <textarea id="feedback-text" style="flex:1;background:none;border:1.5px solid var(--border);border-radius:4px;padding:14px;color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;resize:none;outline:none;caret-color:var(--copper)" placeholder="Type your feedback here..."></textarea>
-        <button class="btn-primary" onclick="sendFeedback()" style="margin:8px 0">SEND FEEDBACK</button>
-        <div style="font-size:10px;color:var(--text-dimmer);text-align:center">Your feedback helps make the caddy smarter.</div>
-      </div>
-
-      <!-- ABOUT -->
-      <div id="screen-about" class="screen hidden">
-        <div class="btn-back" onclick="goToInput()">← Back</div>
-        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 16px">
-          <div class="bib" style="display:inline-block;padding:6px 18px;margin-bottom:16px"><span class="bib-text mc">CADDY LOGIC</span></div>
-          <p style="font-size:14px;color:var(--text-dim);text-align:center;line-height:1.5;margin-bottom:20px">Shot mechanics. Setup cues. Club strategy.<br>Every lie. Every condition. Right when you need it.</p>
-          <div style="width:100%">
-            <div class="row"><span class="row-label" style="color:var(--text-dim)">Version</span><span class="row-value ms">1.0.1 Beta</span></div>
-            <div class="row"><span class="row-label" style="color:var(--text-dim)">Rate Caddy Logic</span><span style="color:var(--text-dimmer);font-size:12px">Coming soon</span></div>
-            <div class="row" style="cursor:pointer" onclick="showScreen('privacy')"><span class="row-label" style="color:var(--text-dim)">Privacy Policy</span><span style="color:var(--text-dim)">→</span></div>
-            <div class="row" style="cursor:pointer" onclick="showScreen('terms')"><span class="row-label" style="color:var(--text-dim)">Terms of Service</span><span style="color:var(--text-dim)">→</span></div>
-            <div class="row" style="border-bottom:none"><span class="row-label" style="color:var(--text-dim)">Built by</span><span class="row-value mc">Brian Bocek</span></div>
-          </div>
-          <p style="font-family:var(--serif);font-size:10px;font-style:italic;color:var(--text-dimmer);text-align:center;margin-top:20px">100% offline. Zero data collected. Your caddy, your data.</p>
-          <p style="font-size:8px;color:#444;text-align:center;margin-top:8px">Not approved for sanctioned tournament play per USGA Rule 4.3</p>
-        </div>
-      </div>
-
-      <!-- PRIVACY POLICY -->
-      <div id="screen-privacy" class="screen hidden">
-        <div class="btn-back" onclick="showScreen('about')">← Back to About</div>
-        <div style="padding:8px 0"><span style="font-size:20px;font-weight:600" class="ms">Privacy Policy</span></div>
-        <div id="privacy-text" class="policy-text"></div>
-      </div>
-
-      <!-- TERMS -->
-      <div id="screen-terms" class="screen hidden">
-        <div class="btn-back" onclick="showScreen('about')">← Back to About</div>
-        <div style="padding:8px 0"><span style="font-size:20px;font-weight:600" class="ms">Terms of Service</span></div>
-        <div id="terms-text" class="policy-text"></div>
-      </div>
-
-      <!-- CONFESSIONAL -->
-      <div id="screen-confessional" class="screen hidden">
-        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 4px">
-          <div style="text-align:center;margin-bottom:16px"><div style="font-size:10px;color:var(--text-dim);letter-spacing:.12em;margin-bottom:4px">POST-ROUND</div><div style="font-size:24px;font-weight:600" class="mg">Round Recap</div></div>
-          <div id="conf-stats" class="conf-box"></div>
-          <div id="conf-hero-box"></div>
-          <div id="conf-score-area" style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid #111">
-            <span style="font-size:14px" class="ms">Score (optional)</span>
-            <div style="display:flex;align-items:center;gap:8px"><button class="yrd-adjust" style="padding:6px 10px;font-size:16px;min-width:40px;min-height:40px" onclick="adjScore(-1)">−</button><span id="conf-score" style="font-size:24px;font-weight:600;min-width:40px;text-align:center" class="mg">—</span><button class="yrd-adjust" style="padding:6px 10px;font-size:16px;min-width:40px;min-height:40px" onclick="adjScore(1)">+</button></div>
-          </div>
-          <div id="conf-kicker" style="text-align:center;padding:10px 0;border-top:1px solid #111"></div>
-          <div style="display:flex;gap:6px;margin-top:12px">
-            <button class="btn-primary" onclick="showScreen('share')" style="flex:1">SHARE</button>
-            <button class="btn-secondary" onclick="finishRound()" style="flex:1">DONE</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sub-scenario panel -->
-      <div id="sub-panel" class="sub-panel"><div class="sub-handle"></div><div id="sub-content"></div></div>
-    </div>
-
-    <div class="home-bar"><div class="home-bar-line"></div></div>
-  </div>
-
-  <!-- PRE-ROUND POPUP -->
-  <div id="preround" class="preround-overlay hidden">
-    <div class="preround-box">
-      <div class="preround-watermark mc">CADDY LOGIC</div>
-      <div class="preround-welcome"><p id="pre-silver" class="silver ms"></p><p id="pre-copper" class="copper mc"></p></div>
-      <div class="preround-setup">
-        <div class="preround-field" style="flex:1"><label>COURSE (OPTIONAL)</label><input id="pre-course" type="text" placeholder="Course name" autocomplete="off"><div id="pre-recent-courses" class="recent-courses"></div></div>
-        <div class="preround-field" style="width:56px"><label>HOLE</label><input id="pre-hole" type="number" value="1" min="1" max="18" style="text-align:center"></div>
-        <div><label style="display:block;font-size:9px;color:var(--text-dim);letter-spacing:.06em;margin-bottom:4px">TEMP</label><div class="temp-group"><button class="temp-btn hot" onclick="setTemp('hot',this)">Hot</button><button class="temp-btn mild active" onclick="setTemp('mild',this)">Mild</button><button class="temp-btn cold" onclick="setTemp('cold',this)">Cold</button></div></div>
-      </div>
-      <div class="preround-cues"><span class="ms">Head down. Eye on ball. Smooth back, accelerate through. Finish. Grip light. Pick a target. Commit.</span></div>
-      <p class="preround-tagline mc">Know the play. Make the call.</p>
-      <button class="btn-primary" onclick="startRound()">I'M READY</button>
-      <div class="preround-disclaimer">Not approved for sanctioned tournament play per USGA Rule 4.3</div>
-    </div>
-  </div>
-
-  <!-- HAMBURGER MENU -->
-  <div id="menu" class="menu-overlay hidden">
-    <div class="menu-header"><span class="menu-close" onclick="closeMenu()">✕ Close</span><div class="bib" style="padding:3px 12px"><span class="bib-text mc" style="font-size:10px">CADDY LOGIC</span></div><div style="width:60px"></div></div>
-    <div class="menu-list">
-      <div class="menu-item" onclick="closeMenu();goToInput()"><div><div class="menu-item-text" style="color:var(--green)">New Shot</div><div class="menu-item-sub">Back to the input screen</div></div></div>
-      <div class="menu-item" onclick="showScreen('bag')"><div><div class="menu-item-text mc">My Bag</div><div class="menu-item-sub">Club distances, custom clubs, lefty/righty</div></div></div>
-      <div class="menu-item" onclick="showScreen('settings')"><div><div class="menu-item-text ms">Round Settings</div><div class="menu-item-sub">Course, hole, temperature, end round</div></div></div>
-      <div class="menu-item" onclick="showScreen('history')"><div><div class="menu-item-text ms">Shot History</div><div class="menu-item-sub">Every shot logged by round</div></div></div>
-      <div class="menu-item" onclick="showScreen('discipline')"><div><div class="menu-item-text mg">Discipline Index</div><div class="menu-item-sub">Season trends, round history</div></div></div>
-      <div class="menu-item" onclick="showScreen('share')"><div><div class="menu-item-text" style="color:var(--green)">Share</div><div class="menu-item-sub">Flex Screen, Share Roast</div></div></div>
-      <div class="menu-item" onclick="showScreen('feedback')"><div><div class="menu-item-text ms">Feedback</div><div class="menu-item-sub">Tell us what to fix</div></div></div>
-      <div class="menu-item" onclick="showScreen('about')"><div><div class="menu-item-text" style="color:var(--text-dimmer)">About</div><div class="menu-item-sub">Version, legal, credits</div></div></div>
-    </div>
-  </div>
-
-  <!-- HOLE PICKER -->
-  <div id="hole-picker" class="menu-overlay hidden" style="justify-content:center;align-items:center" onclick="closeHolePicker()">
-    <div style="background:#080808;border:1.5px solid var(--border);border-radius:10px;padding:20px;width:260px" onclick="event.stopPropagation()">
-      <div style="text-align:center;font-size:14px;font-weight:600;margin-bottom:12px" class="ms">Jump to Hole</div>
-      <div id="hole-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px"></div>
-    </div>
-  </div>
-
-  <!-- WIND POPUP -->
-  <div id="wind-popup" class="menu-overlay hidden" style="justify-content:center;align-items:center" onclick="$('wind-popup').classList.add('hidden')">
-    <div style="background:#080808;border:1.5px solid var(--border);border-radius:10px;padding:20px;width:280px" onclick="event.stopPropagation()">
-      <div style="text-align:center;font-size:14px;font-weight:600;margin-bottom:14px" class="ms">Wind</div>
-      <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;font-weight:600">SPEED</div>
-      <div style="display:flex;gap:6px;margin-bottom:14px">
-        <button onclick="setWind(0,'In Face')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:4px;background:none;color:var(--text-dim);font-family:var(--font);font-size:12px;cursor:pointer;min-height:44px">Off</button>
-        <button onclick="setWindSpeed(1)" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:4px;background:none;color:var(--text);font-family:var(--font);font-size:12px;cursor:pointer;min-height:44px">Light</button>
-        <button onclick="setWindSpeed(2)" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:4px;background:none;color:var(--text);font-family:var(--font);font-size:12px;cursor:pointer;min-height:44px">Mod</button>
-        <button onclick="setWindSpeed(3)" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:4px;background:none;color:var(--text);font-family:var(--font);font-size:12px;cursor:pointer;min-height:44px">Strong</button>
-      </div>
-      <div id="wind-dir-section" style="display:none">
-        <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;font-weight:600">DIRECTION</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-          <button onclick="setWind(window._windSpeed,'In Face')" style="padding:12px;border:1.5px solid var(--border);border-radius:4px;background:none;color:var(--red);font-family:var(--font);font-size:12px;cursor:pointer;min-height:44px;font-weight:600">In Face<div style="font-size:9px;color:var(--text-dimmer);font-weight:400">adds yards</div></button>
-          <button onclick="setWind(window._windSpeed,'At Back')" style="padding:12px;border:1.5px solid var(--border);border-radius:4px;background:none;color:var(--green);font-family:var(--font);font-size:12px;cursor:pointer;min-height:44px;font-weight:600">At Back<div style="font-size:9px;color:var(--text-dimmer);font-weight:400">saves yards</div></button>
-          <button onclick="setWind(window._windSpeed,'Cross Left')" style="padding:12px;border:1.5px solid var(--border);border-radius:4px;background:none;color:var(--text);font-family:var(--font);font-size:12px;cursor:pointer;min-height:44px">Cross Left<div style="font-size:9px;color:var(--text-dimmer)">aim right</div></button>
-          <button onclick="setWind(window._windSpeed,'Cross Right')" style="padding:12px;border:1.5px solid var(--border);border-radius:4px;background:none;color:var(--text);font-family:var(--font);font-size:12px;cursor:pointer;min-height:44px">Cross Right<div style="font-size:9px;color:var(--text-dimmer)">aim left</div></button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- KEYPAD -->
-  <div id="keypad" class="menu-overlay hidden" style="justify-content:flex-end" onclick="closeKeypad()">
-    <div style="background:#080808;border-top:1.5px solid var(--border);padding:20px;width:100%" onclick="event.stopPropagation()">
-      <div style="text-align:center;margin-bottom:14px"><span id="keypad-display" style="font-size:42px;font-weight:600" class="mg">150</span><span style="font-size:14px;color:var(--text-dim);margin-left:4px">yards</span></div>
-      <div id="keypad-keys" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:260px;margin:0 auto"></div>
-    </div>
-  </div>
-
+<!-- LOADING SPLASH #57 -->
+<div id="splash" aria-label="Loading Caddy Logic">
+  <div class="wordmark">Caddy<br>Logic</div>
+  <div class="tagline">Know the play. Make the call.</div>
 </div>
+
+<!-- LANDSCAPE WARNING #60 -->
+<div id="landscape-warn" aria-label="Please rotate your device">
+  <div class="icon">📱</div>
+  <p>Please rotate to portrait mode.</p>
+</div>
+
+<!-- ONBOARDING -->
+<div id="onboarding" class="hidden">
+  <!-- Step 1: Welcome -->
+  <div class="ob-step active" data-step="1">
+    <div class="ob-title">Welcome to Caddy Logic</div>
+    <div class="ob-body">
+      <p>Every app tells you how far. Caddy Logic tells you <strong style="color:var(--gold)">how to hit it.</strong></p>
+      <p>Setup cues. Club selection. Shot strategy. Written for someone who never had a lesson.</p>
+      <p style="font-size:.78rem;color:var(--text-dim);">Not approved for sanctioned tournament play per USGA Rule 4.3.</p>
+    </div>
+    <div class="ob-dots"><span class="ob-dot active"></span><span class="ob-dot"></span><span class="ob-dot"></span><span class="ob-dot"></span></div>
+    <div class="ob-footer">
+      <button class="commit-btn smart" onclick="OB.next()" aria-label="Continue">Next</button>
+    </div>
+  </div>
+
+  <!-- Step 2: Pick your level -->
+  <div class="ob-step" data-step="2">
+    <div class="ob-title">What do you typically shoot?</div>
+    <div class="ob-body">
+      <p>This sets your starting club distances. You can edit them anytime.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;">
+        <button class="cond-btn" onclick="OB.pickLevel('80s')" aria-label="I shoot in the 80s">🔥 Low 80s</button>
+        <button class="cond-btn" onclick="OB.pickLevel('90s')" aria-label="I shoot in the 90s">💪 Around 90</button>
+        <button class="cond-btn" onclick="OB.pickLevel('100s')" aria-label="I shoot around 100">👍 Around 100</button>
+        <button class="cond-btn" onclick="OB.pickLevel('110+')" aria-label="I shoot 110 or more">🏌️ 110+</button>
+      </div>
+    </div>
+    <div class="ob-dots"><span class="ob-dot"></span><span class="ob-dot active"></span><span class="ob-dot"></span><span class="ob-dot"></span></div>
+    <div class="ob-footer">
+      <button class="screen-back" onclick="OB.back()" aria-label="Go back">← Back</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Bag editor within onboarding (#1) -->
+  <div class="ob-step" data-step="3">
+    <div class="ob-title">Your Bag</div>
+    <div class="ob-body">
+      <p>Tap a distance to type exact. Use +/− to adjust by 5.</p>
+      <div id="ob-bag-list" class="ob-bag-list" aria-label="Club distances"></div>
+    </div>
+    <div class="ob-dots"><span class="ob-dot"></span><span class="ob-dot"></span><span class="ob-dot active"></span><span class="ob-dot"></span></div>
+    <div class="ob-footer">
+      <button class="commit-btn smart" onclick="OB.next()" aria-label="Confirm distances">Looks Good</button>
+      <button class="screen-back" onclick="OB.back()" aria-label="Go back">← Back</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Confirmation -->
+  <div class="ob-step" data-step="4">
+    <div class="ob-title">You're Set</div>
+    <div class="ob-body">
+      <p>Pick your lie. Enter your yardage. Caddy Logic handles the rest.</p>
+      <p><strong style="color:var(--green)">Smart Play</strong> — safe mechanics, correct club, center green.</p>
+      <p><strong style="color:var(--red)">Let It Eat</strong> — bold but not stupid. When the moment calls for it.</p>
+      <p style="margin-top:16px;color:var(--copper);font-style:italic;">Know the play. Make the call.</p>
+    </div>
+    <div class="ob-dots"><span class="ob-dot"></span><span class="ob-dot"></span><span class="ob-dot"></span><span class="ob-dot active"></span></div>
+    <div class="ob-footer">
+      <button class="commit-btn smart" onclick="OB.finish()" aria-label="Start using app">Let's Go</button>
+      <button class="screen-back" onclick="OB.back()" aria-label="Go back">← Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="bib" onclick="APP.goInput()" role="button" tabindex="0" aria-label="Return to input screen">CADDY<br>LOGIC</div>
+  <div class="header-icons">
+    <div class="hole-badge" onclick="APP.promptHole()" role="button" tabindex="0" aria-label="Change hole number">H<span id="hole-num">1</span></div>
+    <button class="header-btn" id="btn-wind" onclick="APP.openWind()" aria-label="Wind settings">🌬️</button>
+    <button class="header-btn" id="btn-rain" onclick="APP.toggleRain()" aria-label="Toggle rain">🌧️</button>
+    <button class="header-btn" id="btn-menu" onclick="APP.openMenu()" aria-label="Open menu">☰</button>
+  </div>
+</header>
+
+<!-- WIND POPUP #10 -->
+<div id="wind-popup" aria-label="Wind speed and direction">
+  <div class="wind-popup-card">
+    <h3>Wind Speed</h3>
+    <div class="wind-speed-row">
+      <button class="wind-speed-btn active" data-wind="0" onclick="APP.setWindSpeed(0)" aria-label="No wind">Off</button>
+      <button class="wind-speed-btn" data-wind="1" onclick="APP.setWindSpeed(1)" aria-label="Light wind">Light</button>
+      <button class="wind-speed-btn" data-wind="2" onclick="APP.setWindSpeed(2)" aria-label="Moderate wind">Mod</button>
+      <button class="wind-speed-btn" data-wind="3" onclick="APP.setWindSpeed(3)" aria-label="Strong wind">Strong</button>
+    </div>
+    <div class="wind-dir-section" id="wind-dir-section">
+      <h3>Wind Direction</h3>
+      <div class="wind-dir-row">
+        <button class="wind-dir-btn active" data-dir="In Face" onclick="APP.setWindDir('In Face')" aria-label="Wind in face">In Face</button>
+        <button class="wind-dir-btn" data-dir="At Back" onclick="APP.setWindDir('At Back')" aria-label="Wind at back">At Back</button>
+        <button class="wind-dir-btn" data-dir="Cross Left" onclick="APP.setWindDir('Cross Left')" aria-label="Crosswind from left">Cross L</button>
+        <button class="wind-dir-btn" data-dir="Cross Right" onclick="APP.setWindDir('Cross Right')" aria-label="Crosswind from right">Cross R</button>
+      </div>
+    </div>
+    <button class="wind-popup-done" onclick="APP.closeWind()" aria-label="Confirm wind settings">Done</button>
+  </div>
+</div>
+
+<!-- HAMBURGER MENU -->
+<div id="menu-overlay" onclick="APP.closeMenu()" aria-hidden="true"></div>
+<div id="menu-panel" role="navigation" aria-label="Main menu">
+  <div class="menu-close"><button onclick="APP.closeMenu()" aria-label="Close menu">✕</button></div>
+  <div class="menu-item" data-screen="input" onclick="APP.menuGo('input')"><span class="mi-icon">⛳</span> Back to Input</div>
+  <div class="menu-item" data-screen="bag" onclick="APP.menuGo('bag')"><span class="mi-icon">🏌️</span> My Bag</div>
+  <div class="menu-item" data-screen="history" onclick="APP.menuGo('history')"><span class="mi-icon">📋</span> Shot History</div>
+  <div class="menu-item" data-screen="settings" onclick="APP.menuGo('settings')"><span class="mi-icon">⚙️</span> Round Settings</div>
+  <div class="menu-item" onclick="APP.menuGo('confessional')"><span class="mi-icon">🏁</span> End Round</div>
+  <div class="menu-item" data-screen="about" onclick="APP.menuGo('about')"><span class="mi-icon">ℹ️</span> About</div>
+</div>
+
+<!-- ======================== SCREENS ======================== -->
+
+<!-- INPUT SCREEN -->
+<div id="screen-input" class="screen active">
+  <div class="welcome-card" id="welcome-card">
+    <div class="welcome-silver" id="welcome-silver"></div>
+    <div class="welcome-copper" id="welcome-copper"></div>
+  </div>
+
+  <!-- Quick Jump -->
+  <div class="quick-jump" id="quick-jump" aria-label="Quick terrain selection"></div>
+
+  <!-- Yardage -->
+  <div class="yardage-section">
+    <div class="yardage-label">Yardage</div>
+    <input type="number" id="yardage-input" inputmode="numeric" pattern="[0-9]*" placeholder="150" aria-label="Enter yardage">
+    <div><button class="skip-dist" id="skip-dist-btn" onclick="APP.toggleSkipDist()" aria-label="Skip distance entry">Skip distance — just tell me how to hit it</button></div>
+  </div>
+
+  <!-- Weather row -->
+  <div class="weather-row">
+    <button class="temp-btn" data-temp="hot" onclick="APP.setTemp('hot')" aria-label="Hot temperature">🔥 Hot</button>
+    <button class="temp-btn" data-temp="mild" onclick="APP.setTemp('mild')" aria-label="Mild temperature">🌤️ Mild</button>
+    <button class="temp-btn" data-temp="cold" onclick="APP.setTemp('cold')" aria-label="Cold temperature">❄️ Cold</button>
+  </div>
+
+  <!-- Terrain -->
+  <div class="section-label">Terrain</div>
+  <div class="cond-grid" id="terrain-grid" aria-label="Terrain conditions"></div>
+
+  <!-- Sub-panel: Tee -->
+  <div class="sub-panel" id="sub-tee">
+    <button class="sub-close" onclick="APP.closeSub('tee')" aria-label="Close">✕</button>
+    <div class="sub-title">Tee Shot</div>
+    <div class="sub-options">
+      <button class="cond-btn" data-sub="tee_par3" onclick="APP.pickSub('tee','tee_par3')">Par 3</button>
+      <button class="cond-btn" data-sub="tee_par45" onclick="APP.pickSub('tee','tee_par45')">Par 4/5</button>
+    </div>
+  </div>
+
+  <!-- Sub-panel: Trees -->
+  <div class="sub-panel" id="sub-trees">
+    <button class="sub-close" onclick="APP.closeSub('trees')" aria-label="Close">✕</button>
+    <div class="sub-title">Trees — What's the Play?</div>
+    <div class="sub-options">
+      <button class="cond-btn" data-sub="trees_around_l" onclick="APP.pickSub('trees','trees_around_l')">Go Left</button>
+      <button class="cond-btn" data-sub="trees_around_r" onclick="APP.pickSub('trees','trees_around_r')">Go Right</button>
+      <button class="cond-btn" data-sub="trees_over" onclick="APP.pickSub('trees','trees_over')">Go Over</button>
+      <button class="cond-btn" data-sub="trees_punch" onclick="APP.pickSub('trees','trees_punch')">Punch Out</button>
+    </div>
+  </div>
+
+  <!-- Sub-panel: Green bunker -->
+  <div class="sub-panel" id="sub-grn_bnk">
+    <button class="sub-close" onclick="APP.closeSub('grn_bnk')" aria-label="Close">✕</button>
+    <div class="sub-title">Bunker Lie</div>
+    <div class="sub-options">
+      <button class="cond-btn" data-sub="grn_bnk_clean" onclick="APP.pickSub('grn_bnk','grn_bnk_clean')">Clean</button>
+      <button class="cond-btn" data-sub="grn_bnk_plugged" onclick="APP.pickSub('grn_bnk','grn_bnk_plugged')">Plugged</button>
+      <button class="cond-btn" data-sub="grn_bnk_wet" onclick="APP.pickSub('grn_bnk','grn_bnk_wet')">Wet</button>
+    </div>
+  </div>
+
+  <!-- Sub-panel: Water -->
+  <div class="sub-panel" id="sub-water">
+    <button class="sub-close" onclick="APP.closeSub('water')" aria-label="Close">✕</button>
+    <div class="sub-title">Water — Where?</div>
+    <div class="sub-options">
+      <button class="cond-btn" data-sub="water_front_over" onclick="APP.pickSub('water','water_front_over')">Front · Over</button>
+      <button class="cond-btn" data-sub="water_front_layup" onclick="APP.pickSub('water','water_front_layup')">Front · Lay Up</button>
+      <button class="cond-btn" data-sub="water_left" onclick="APP.pickSub('water','water_left')">Left</button>
+      <button class="cond-btn" data-sub="water_right" onclick="APP.pickSub('water','water_right')">Right</button>
+      <button class="cond-btn" data-sub="water_crossing" onclick="APP.pickSub('water','water_crossing')">Crossing</button>
+    </div>
+  </div>
+
+  <!-- Slope -->
+  <div class="section-label">Slope</div>
+  <div class="cond-grid" id="slope-grid" aria-label="Slope conditions"></div>
+
+  <!-- Obstacles -->
+  <div class="section-label">Obstacle</div>
+  <div class="cond-grid" id="obstacle-grid" aria-label="Obstacle conditions"></div>
+
+  <!-- Elevation -->
+  <div class="section-label">Elevation</div>
+  <div class="elev-row" id="elev-row" aria-label="Elevation change"></div>
+
+  <!-- Commit -->
+  <div class="commit-row">
+    <button class="commit-btn smart" id="btn-smart" onclick="APP.commit('smart')" aria-label="Smart Play">Smart Play</button>
+    <button class="commit-btn hero" id="btn-hero" onclick="APP.commit('hero')" aria-label="Let It Eat">Let It Eat</button>
+  </div>
+</div>
+
+<!-- OUTPUT SCREEN -->
+<div id="screen-output" class="screen">
+  <button class="screen-back" onclick="APP.editFromOutput()" aria-label="Back to input">← Edit Shot</button>
+
+  <div class="output-header">
+    <div class="output-club" id="out-club" aria-label="Recommended club"></div>
+    <div class="output-sublabel" id="out-sublabel"></div>
+    <div class="output-yardage" id="out-yardage"></div>
+  </div>
+
+  <!-- Confidence bars (visual only, NO percentages) -->
+  <div class="conf-bar-wrap">
+    <div class="conf-bar-label"><span style="color:var(--green)">Smart Play</span></div>
+    <div class="conf-bar-track"><div class="conf-bar-fill smart" id="conf-smart" style="width:0"></div></div>
+    <div class="conf-bar-label"><span style="color:var(--red)">Let It Eat</span></div>
+    <div class="conf-bar-track"><div class="conf-bar-fill hero" id="conf-hero" style="width:0"></div></div>
+  </div>
+
+  <!-- Smart / Hero toggle -->
+  <div class="choice-toggle" id="choice-toggle">
+    <button id="toggle-smart" onclick="APP.showChoice('smart')" aria-label="View Smart Play advice">Smart Play</button>
+    <button id="toggle-hero" onclick="APP.showChoice('hero')" aria-label="View Let It Eat advice">Let It Eat</button>
+  </div>
+
+  <!-- Advice -->
+  <div id="advice-container"></div>
+
+  <!-- Kicker -->
+  <div class="kicker" id="out-kicker"></div>
+
+  <!-- Every Swing toggle #38 -->
+  <div class="every-swing-toggle">
+    <button onclick="APP.toggleEverySwing()" aria-label="Toggle Show Every Swing">Show Every Swing</button>
+    <div class="subtitle">Fundamentals that apply to every shot</div>
+  </div>
+  <div class="every-swing-content" id="every-swing-content"></div>
+
+  <!-- Actions -->
+  <div class="output-actions">
+    <button onclick="APP.nextShot()" aria-label="Next shot">Next Shot</button>
+    <button onclick="APP.editFromOutput()" aria-label="Edit this shot">Edit</button>
+  </div>
+</div>
+
+<!-- MY BAG SCREEN -->
+<div id="screen-bag" class="screen">
+  <button class="screen-back" onclick="APP.goInput()" aria-label="Back">← Back</button>
+  <div class="screen-title">My Bag</div>
+  <div id="bag-list" aria-label="Your clubs"></div>
+  <button class="bag-add-btn" onclick="APP.addClub()" aria-label="Add custom club">+ Add Club</button>
+  <div class="bag-hand-toggle">
+    <span>Swing:</span>
+    <button id="hand-right" onclick="APP.setHand('right')" aria-label="Right-handed">Righty</button>
+    <button id="hand-left" onclick="APP.setHand('left')" aria-label="Left-handed">Lefty</button>
+  </div>
+</div>
+
+<!-- HISTORY SCREEN -->
+<div id="screen-history" class="screen">
+  <button class="screen-back" onclick="APP.goInput()" aria-label="Back">← Back</button>
+  <div class="screen-title">Shot History</div>
+  <div id="history-list" aria-label="Shot history"></div>
+  <div id="history-empty" style="text-align:center;color:var(--text-dim);padding:40px 0;font-size:.88rem;">No shots yet this round.</div>
+</div>
+
+<!-- ROUND SETTINGS SCREEN -->
+<div id="screen-settings" class="screen">
+  <button class="screen-back" onclick="APP.goInput()" aria-label="Back">← Back</button>
+  <div class="screen-title">Round Settings</div>
+  <div class="settings-row">
+    <label for="course-name">Course</label>
+    <input type="text" id="course-name" placeholder="Course name" oninput="APP.saveCourse()" aria-label="Course name">
+  </div>
+  <div class="settings-row">
+    <label>Hole</label>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button class="elev-btn" onclick="APP.adjHole(-1)" aria-label="Previous hole">−</button>
+      <span id="settings-hole" style="color:var(--gold);font-weight:700;min-width:24px;text-align:center;">1</span>
+      <button class="elev-btn" onclick="APP.adjHole(1)" aria-label="Next hole">+</button>
+    </div>
+  </div>
+  <div style="margin-top:24px;">
+    <button class="commit-btn hero" style="width:100%;" onclick="APP.menuGo('confessional')" aria-label="End round">End Round</button>
+  </div>
+</div>
+
+<!-- CONFESSIONAL SCREEN -->
+<div id="screen-confessional" class="screen">
+  <button class="screen-back" onclick="APP.goInput()" aria-label="Back">← Back</button>
+  <div class="screen-title">Round Recap</div>
+
+  <div class="confessional-card" id="conf-stats"></div>
+
+  <div class="confessional-score">
+    <input type="number" id="conf-score" inputmode="numeric" placeholder="Score" aria-label="Your score (optional)">
+    <label>Score (optional)</label>
+  </div>
+
+  <div class="confessional-kicker" id="conf-kicker"></div>
+
+  <div class="confessional-actions">
+    <button class="btn-share" onclick="APP.shareRecap()" aria-label="Share recap">Share Recap</button>
+    <button class="btn-share" style="background:var(--copper);" onclick="APP.showFlex()" aria-label="Flex screen">Flex on Them</button>
+    <button class="btn-cancel-round" onclick="APP.cancelRound()" aria-label="Cancel and keep playing">Cancel — Keep Playing</button>
+    <button class="btn-new-round" onclick="APP.newRound()" aria-label="Start new round">New Round</button>
+  </div>
+</div>
+
+<!-- FLEX SCREEN -->
+<div id="screen-flex" class="screen">
+  <button class="screen-back" onclick="APP.menuGo('confessional')" aria-label="Back to recap">← Back</button>
+  <div class="screen-title">The Flex</div>
+  <div class="flex-card">
+    <div class="flex-course" id="flex-course"></div>
+    <div class="flex-date" id="flex-date"></div>
+    <div class="flex-text" id="flex-text"></div>
+  </div>
+  <div class="flex-share-row">
+    <button class="btn-share" onclick="APP.shareFlex()" aria-label="Share flex">Share</button>
+  </div>
+</div>
+
+<!-- ABOUT SCREEN -->
+<div id="screen-about" class="screen">
+  <button class="screen-back" onclick="APP.goInput()" aria-label="Back">← Back</button>
+  <div class="screen-title">About</div>
+  <div class="about-section">
+    <h3>What This Is</h3>
+    <p>Every app tells you how far. Caddy Logic tells you how to hit it.</p>
+    <p style="margin-top:8px;">Setup cues, club selection, and shot strategy — written for someone who never had a lesson.</p>
+  </div>
+  <div class="about-section">
+    <h3>What This Isn't</h3>
+    <p>Not GPS. Not a scorecard. Not a lesson replacement. This is your caddy whispering in your ear before every shot.</p>
+  </div>
+  <div class="about-section">
+    <h3>USGA Disclaimer</h3>
+    <p>Not approved for sanctioned tournament play per USGA Rule 4.3.</p>
+  </div>
+  <div class="about-section">
+    <h3>Privacy</h3>
+    <p id="about-privacy"></p>
+  </div>
+  <div class="about-section">
+    <h3>Terms</h3>
+    <p id="about-terms"></p>
+  </div>
+  <button class="btn-reset-app" onclick="APP.resetApp()" aria-label="Reset all app data">Reset App</button>
+  <div class="about-version" id="about-version"></div>
+</div>
+
+<!-- CLIPBOARD TOAST #47 -->
+<div id="clipboard-toast">Copied to clipboard ✓</div>
+
+<!-- SCRIPTS -->
 <script src="content.js"></script>
 <script src="app.js"></script>
+<!-- GRACEFUL FALLBACK #56 -->
+<noscript>
+  <div style="padding:40px;text-align:center;color:#D0D0C8;font-size:1rem;">
+    Caddy Logic requires JavaScript.<br>Please enable JavaScript and reload.
+  </div>
+</noscript>
+
 </body>
 </html>
