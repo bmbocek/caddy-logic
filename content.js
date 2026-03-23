@@ -5,7 +5,7 @@
 // Smart Play = safe mechanics. Let It Eat = bold but not stupid.
 
 const CL = {
-version: '1.0.2 Beta',
+version: '1.0.3 Beta',
 
 // =============================================
 // BAGS
