@@ -1,22 +1,24 @@
-// CADDY LOGIC — App v1.0.4 Beta
-// Premium aesthetic. Concise caddy voice. Merge engine. All fixes.
-// Commit stays on same hole. Weather persists. Cards are short.
+// CADDY LOGIC — App v1.0.5 Beta — All 25 audit fixes applied
 'use strict';
 
 const state={name:'',hand:'right',range:'100s',bag:[],temp:'mild',showEverySwing:false,course:'',hole:1,
-windState:0,windDir:'In Face',isRaining:false,shots:[],roundActive:false,yardage:150,skipDistance:false,
+windState:0,windDir:'In Face',isRaining:false,shots:[],roundActive:false,yardage:0,skipDistance:false,
 elevation:0,activeConditions:[],subScenario:null,rounds:[],recentCourses:[],currentScreen:'input',
-onboarded:false,confScore:null,_smartClub:null,_heroClub:null,_adjusted:0,_mods:[],_isTee:false,_baseKey:'_default',_lastPlayText:''};
+onboarded:false,confScore:null,_smartClub:null,_heroClub:null,_adjusted:0,_mods:[],_isTee:false,_baseKey:'_default',_lastPlayText:'',_cameFromOutput:false,_built:false};
 
 function $(id){return document.getElementById(id);}
 let _commitLock=false;
 function debounce(fn){if(_commitLock)return;_commitLock=true;fn();setTimeout(()=>{_commitLock=false;},600);}
 function haptic(ms){if(navigator.vibrate)try{navigator.vibrate(ms||10);}catch(e){}}
 function loadState(){try{const s=localStorage.getItem('cl-state');if(s)Object.assign(state,JSON.parse(s));}catch(e){}}
-function saveState(){try{const s={...state};delete s._smartClub;delete s._heroClub;localStorage.setItem('cl-state',JSON.stringify(s));}catch(e){}}
+function saveState(){try{const s={...state};delete s._smartClub;delete s._heroClub;delete s._built;delete s._cameFromOutput;localStorage.setItem('cl-state',JSON.stringify(s));}catch(e){}}
 function cleanupRounds(){if(state.rounds.length>20)state.rounds=state.rounds.slice(-20);saveState();}
-// Truncate to first sentence
-function firstSentence(t){if(!t)return'';const m=t.match(/^[^.!]+[.!]?/);return m?m[0].trim():t.substring(0,80);}
+
+// #4 fix: smarter sentence extraction — don't cut on abbreviations
+function firstLine(t){if(!t)return'';
+  // Split on sentence-ending periods (followed by space+uppercase or end of string) but not mid-sentence
+  const m=t.match(/^.+?(?:\.|!)\s*(?=[A-Z]|$)/);
+  return m?m[0].trim():t.length>100?t.substring(0,100)+'…':t;}
 
 function init(){
   loadState();
@@ -38,36 +40,71 @@ function obTypeDist(i){const v=prompt(state.bag[i].name+' distance:',state.bag[i
 function showObConfirm(){$('ob-3').classList.add('hidden');$('ob-4').classList.remove('hidden');$('ob-confirm-name').textContent=state.name;const checks=[`${state.hand==='right'?'Right':'Left'}-handed`,`Range: ${state.range}`,`${state.bag.filter(c=>c.on).length} clubs`];$('ob-confirm-list').innerHTML=checks.map(c=>`<div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #111"><svg width="18" height="18" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" fill="none" stroke="var(--green)" stroke-width="1.2"/><path d="M4 7 L6 9 L10 5" fill="none" stroke="var(--green)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span style="font-size:14px" class="ms">${c}</span></div>`).join('');}
 function obFinish(){state.onboarded=true;saveState();$('onboarding').classList.add('hidden');showMainApp();haptic(20);}
 
-// MAIN APP
-function showMainApp(){$('main-app').classList.remove('hidden');$('main-app').style.display='flex';buildConditionIcons();buildHoleGrid();buildElevRow();buildQuickJumps();buildWindPopup();restoreVisualState();initAbout();if(!state.roundActive)showPreround();}
-function restoreVisualState(){$('hole-num').textContent=state.hole;updateYardageDisplay();updateWindIcon();updateWeatherIcon();document.querySelectorAll('.temp-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.temp-btn.'+state.temp).forEach(b=>b.classList.add('active'));state.activeConditions.forEach(k=>{const el=document.querySelector(`[data-cond="${k}"]`);if(el)el.classList.add('on');});document.querySelectorAll('.elev-btn').forEach(b=>{const m=parseInt(b.dataset.mod);if(m===state.elevation&&m!==0)b.classList.add(m>0?'active-up':'active-dn');});}
+// MAIN APP — #1 fix: guard against duplicate builds
+function showMainApp(){
+  $('main-app').classList.remove('hidden');$('main-app').style.display='flex';
+  if(!state._built){
+    buildConditionIcons();buildHoleGrid();buildElevRow();buildQuickJumps();buildWindPopup();
+    state._built=true;
+  }
+  restoreVisualState();initAbout();
+  if(!state.roundActive)showPreround();
+}
+function restoreVisualState(){
+  $('hole-num').textContent=state.hole;updateYardageDisplay();updateWindIcon();updateWeatherIcon();
+  document.querySelectorAll('.temp-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.temp-btn.'+state.temp).forEach(b=>b.classList.add('active'));
+  state.activeConditions.forEach(k=>{const el=document.querySelector(`[data-cond="${k}"]`);if(el)el.classList.add('on');});
+  document.querySelectorAll('.elev-btn').forEach(b=>{const m=parseInt(b.dataset.mod);if(m===state.elevation&&m!==0)b.classList.add(m>0?'active-up':'active-dn');});
+}
 function initAbout(){$('about-privacy').textContent=CL.privacyPolicy;$('about-terms').textContent=CL.termsOfService;$('about-version').textContent='v'+CL.version+' · Built by Brian Bocek';}
 
-// PRE-ROUND — only shows for fresh rounds
+// PRE-ROUND
 function showPreround(){const w=CL.getWelcome();$('pre-silver').textContent=w.silver;$('pre-copper').textContent=w.copper;$('pre-hole').value=state.hole;if(state.course)$('pre-course').value=state.course;$('preround').classList.remove('hidden');$('banner').classList.add('faded');}
-function startRound(){state.course=$('pre-course').value.trim();state.hole=Math.max(1,Math.min(18,parseInt($('pre-hole').value)||1));state.roundActive=true;state.shots=[];if(state.course&&!state.recentCourses.includes(state.course)){state.recentCourses.unshift(state.course);state.recentCourses=state.recentCourses.slice(0,5);}$('hole-num').textContent=state.hole;$('preround').classList.add('hidden');$('banner').classList.remove('faded');saveState();haptic(15);}
+function startRound(){
+  state.course=$('pre-course').value.trim();state.hole=Math.max(1,Math.min(18,parseInt($('pre-hole').value)||1));
+  state.roundActive=true;state.shots=[];
+  if(state.course&&!state.recentCourses.includes(state.course)){state.recentCourses.unshift(state.course);state.recentCourses=state.recentCourses.slice(0,5);}
+  $('hole-num').textContent=state.hole;$('preround').classList.add('hidden');$('banner').classList.remove('faded');
+  // #25 fix: sync temp buttons on input screen after pre-round
+  document.querySelectorAll('.temp-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.temp-btn.'+state.temp).forEach(b=>b.classList.add('active'));
+  saveState();haptic(15);
+}
 
-// WIND — abbreviated labels: Off / Lt / Mod / Str
+// WIND
 function cycleWind(){$('wind-popup').classList.remove('hidden');haptic(10);}
-function buildWindPopup(){const sr=$('wind-speed-row'),dr=$('wind-dir-row');['Off','Lt','Mod','Str'].forEach((l,i)=>{const b=document.createElement('button');b.className='wind-opt'+(i===state.windState?' active':'');b.textContent=l;b.dataset.wind=i;b.onclick=()=>{window._pw=i;sr.querySelectorAll('.wind-opt').forEach(x=>x.classList.remove('active'));b.classList.add('active');if(i>0)$('wind-dir-section').classList.add('show');else $('wind-dir-section').classList.remove('show');haptic(8);};sr.appendChild(b);});['Face','Back','Cr L','Cr R'].forEach((l,i)=>{const dirs=['In Face','At Back','Cross Left','Cross Right'];const b=document.createElement('button');b.className='wind-opt'+(dirs[i]===state.windDir?' active':'');b.textContent=l;b.dataset.dir=dirs[i];b.onclick=()=>{window._pd=dirs[i];dr.querySelectorAll('.wind-opt').forEach(x=>x.classList.remove('active'));b.classList.add('active');haptic(8);};dr.appendChild(b);});if(state.windState>0)$('wind-dir-section').classList.add('show');window._pw=state.windState;window._pd=state.windDir;}
+function buildWindPopup(){
+  const sr=$('wind-speed-row'),dr=$('wind-dir-row');
+  sr.innerHTML='';dr.innerHTML=''; // #1 fix: clear before building
+  ['Off','Lt','Mod','Str'].forEach((l,i)=>{const b=document.createElement('button');b.className='wind-opt'+(i===state.windState?' active':'');b.textContent=l;b.dataset.wind=i;b.onclick=()=>{window._pw=i;sr.querySelectorAll('.wind-opt').forEach(x=>x.classList.remove('active'));b.classList.add('active');if(i>0)$('wind-dir-section').classList.add('show');else $('wind-dir-section').classList.remove('show');haptic(8);};sr.appendChild(b);});
+  ['Face','Back','Cr L','Cr R'].forEach((l,i)=>{const dirs=['In Face','At Back','Cross Left','Cross Right'];const b=document.createElement('button');b.className='wind-opt'+(dirs[i]===state.windDir?' active':'');b.textContent=l;b.dataset.dir=dirs[i];b.onclick=()=>{window._pd=dirs[i];dr.querySelectorAll('.wind-opt').forEach(x=>x.classList.remove('active'));b.classList.add('active');haptic(8);};dr.appendChild(b);});
+  if(state.windState>0)$('wind-dir-section').classList.add('show');
+  window._pw=state.windState;window._pd=state.windDir;
+}
 function closeWindPopup(){state.windState=window._pw||0;state.windDir=window._pd||'In Face';updateWindIcon();$('wind-popup').classList.add('hidden');saveState();if(state.currentScreen==='output')whatsMyPlay();}
 function updateWindIcon(){const s=state.windState;const labels=['Off','Lt','Mod','Str'];$('wind-label').textContent=labels[s];$('wind-label').style.color=s>0?'var(--silver)':'#666';let p='';if(s>=1)p+='<path d="M1 7 Q4 5 7 7 Q10 9 13 7" fill="none" stroke="'+(s>0?'#ccc':'#666')+'" stroke-width="1.3" stroke-linecap="round"/>';if(s>=2)p+='<path d="M1 4 Q4 2 7 4 Q10 6 13 4" fill="none" stroke="#ccc" stroke-width="1" stroke-linecap="round"/>';if(s>=3)p+='<path d="M1 10 Q4 8 7 10 Q10 12 13 10" fill="none" stroke="#ccc" stroke-width=".8" stroke-linecap="round"/>';if(s===0)p='<path d="M1 7 Q4 5 7 7 Q10 9 13 7" fill="none" stroke="#666" stroke-width="1.3" stroke-linecap="round"/>';$('wind-icon').innerHTML=p;}
 function toggleWeather(){state.isRaining=!state.isRaining;updateWeatherIcon();saveState();if(state.currentScreen==='output')whatsMyPlay();haptic(10);}
 function updateWeatherIcon(){const icon=$('weather-icon');if(state.isRaining)icon.innerHTML='<path d="M3 5 Q3 2 7 2 Q11 2 11 5 Q13 5 13 8 Q13 10 10 10 L4 10 Q1 10 1 8 Q1 6 3 5Z" fill="none" stroke="var(--blue)" stroke-width="1.1"/><line x1="4" y1="11" x2="3" y2="13" stroke="var(--blue)" stroke-width=".8"/><line x1="7" y1="11" x2="6" y2="13" stroke="var(--blue)" stroke-width=".8"/><line x1="10" y1="11" x2="9" y2="13" stroke="var(--blue)" stroke-width=".8"/>';else icon.innerHTML='<circle cx="7" cy="7" r="3" fill="none" stroke="var(--gold)" stroke-width="1.1"/><line x1="7" y1="1" x2="7" y2="3" stroke="var(--gold)" stroke-width=".9"/><line x1="7" y1="11" x2="7" y2="13" stroke="var(--gold)" stroke-width=".9"/><line x1="1" y1="7" x2="3" y2="7" stroke="var(--gold)" stroke-width=".9"/><line x1="11" y1="7" x2="13" y2="7" stroke="var(--gold)" stroke-width=".9"/>';}
 
-// HOLE — manual advance only
+// HOLE
 function openHolePicker(){$('hole-picker').classList.remove('hidden');}
 function closeHolePicker(){$('hole-picker').classList.add('hidden');}
 function buildHoleGrid(){const g=$('hole-grid');g.innerHTML='';for(let i=1;i<=18;i++){const b=document.createElement('button');b.className='wind-opt';b.textContent=i;b.onclick=()=>{state.hole=i;$('hole-num').textContent=i;closeHolePicker();saveState();haptic(10);};g.appendChild(b);}}
 function adjSettingsHole(d){state.hole=Math.max(1,Math.min(18,state.hole+d));$('hole-num').textContent=state.hole;$('set-hole').textContent=state.hole;saveState();haptic(8);if(state.hole>=18&&d>0&&state.shots.length>0)setTimeout(()=>{if(confirm('Hole 18. End round?'))endRound();},300);}
 
 // INPUT
-function adjustYard(dir){state.yardage=Math.max(5,Math.min(350,state.yardage+dir));state.skipDistance=false;updateYardageDisplay();haptic(8);}
-function updateYardageDisplay(){$('yardage-num').textContent=state.skipDistance?'—':state.yardage;document.querySelectorAll('.qj-btn').forEach(b=>b.classList.toggle('active',parseInt(b.textContent)===state.yardage&&!state.skipDistance));}
+function adjustYard(dir){state.yardage=Math.max(5,Math.min(350,(state.yardage||150)+dir));state.skipDistance=false;updateYardageDisplay();haptic(8);}
+function updateYardageDisplay(){
+  if(state.yardage===0&&!state.skipDistance){$('yardage-num').textContent='—';$('yardage-num').style.opacity='.3';}
+  else if(state.skipDistance){$('yardage-num').textContent='—';$('yardage-num').style.opacity='.3';}
+  else{$('yardage-num').textContent=state.yardage;$('yardage-num').style.opacity='1';}
+  document.querySelectorAll('.qj-btn').forEach(b=>b.classList.toggle('active',parseInt(b.textContent)===state.yardage&&!state.skipDistance&&state.yardage>0));
+}
 function skipDistance(){state.skipDistance=true;state.yardage=0;updateYardageDisplay();haptic(10);}
-function openKeypad(){const v=prompt('Yards:',state.skipDistance?'':state.yardage);if(v===null)return;const n=parseInt(v);if(!isNaN(n)&&n>=0&&n<=400){state.yardage=n;state.skipDistance=n===0;updateYardageDisplay();}}
-function buildQuickJumps(){const qj=$('quick-jumps');[50,75,100,125,150,175,200].forEach(v=>{const b=document.createElement('button');b.className='qj-btn';b.textContent=v;b.onclick=()=>{state.yardage=v;state.skipDistance=false;updateYardageDisplay();haptic(8);};qj.appendChild(b);});}
-function buildElevRow(){const r=$('elev-row');[{l:'None',m:0},{l:'▲Slt',m:4},{l:'▲Stp',m:10},{l:'▼Slt',m:-4},{l:'▼Stp',m:-10}].forEach(e=>{const b=document.createElement('button');b.className='elev-btn';b.textContent=e.l;b.dataset.mod=e.m;b.onclick=()=>{document.querySelectorAll('.elev-btn').forEach(x=>x.classList.remove('active-up','active-dn'));if(state.elevation===e.m){state.elevation=0;}else{state.elevation=e.m;if(e.m!==0)b.classList.add(e.m>0?'active-up':'active-dn');}haptic(8);};r.appendChild(b);});}
+function openKeypad(){const v=prompt('Yards:',state.yardage||'');if(v===null)return;const n=parseInt(v);if(!isNaN(n)&&n>=0&&n<=400){state.yardage=n;state.skipDistance=n===0;updateYardageDisplay();}}
+function buildQuickJumps(){const qj=$('quick-jumps');qj.innerHTML='';[50,75,100,125,150,175,200].forEach(v=>{const b=document.createElement('button');b.className='qj-btn';b.textContent=v;b.onclick=()=>{state.yardage=v;state.skipDistance=false;updateYardageDisplay();haptic(8);};qj.appendChild(b);});}
+function buildElevRow(){const r=$('elev-row');r.innerHTML='<span class="elev-label ms">ELEV</span>';[{l:'None',m:0},{l:'▲Slt',m:4},{l:'▲Stp',m:10},{l:'▼Slt',m:-4},{l:'▼Stp',m:-10}].forEach(e=>{const b=document.createElement('button');b.className='elev-btn';b.textContent=e.l;b.dataset.mod=e.m;b.onclick=()=>{document.querySelectorAll('.elev-btn').forEach(x=>x.classList.remove('active-up','active-dn'));if(state.elevation===e.m){state.elevation=0;}else{state.elevation=e.m;if(e.m!==0)b.classList.add(e.m>0?'active-up':'active-dn');}haptic(8);};r.appendChild(b);});}
 function setTemp(t){state.temp=t;document.querySelectorAll('.temp-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.temp-btn.'+t).forEach(b=>b.classList.add('active'));saveState();haptic(8);if(state.currentScreen==='output')whatsMyPlay();}
 
 // CONDITIONS
@@ -86,8 +123,30 @@ function openSubPanel(key){const panel=$('sub-panel'),content=$('sub-content');c
 function selectSub(parent,sub){state.subScenario=parent+'_'+sub;if(!state.activeConditions.includes(parent)){const c=CL.conditions[parent];if(c.group==='terrain'){state.activeConditions=state.activeConditions.filter(k=>CL.conditions[k].group!=='terrain');document.querySelectorAll('.cond-icon').forEach(e=>{if(CL.conditions[e.dataset.cond]&&CL.conditions[e.dataset.cond].group==='terrain')e.classList.remove('on');});}state.activeConditions.push(parent);const el=document.querySelector(`[data-cond="${parent}"]`);if(el)el.classList.add('on');}closeSubPanel();saveState();haptic(10);}
 function closeSubPanel(){$('sub-panel').classList.remove('open');}
 
-// WHAT'S MY PLAY — merge engine, concise cards
+// #15 fix: proper kicker key mapping
+function getKickerKey(baseKey){
+  // Map base keys to kicker categories
+  if(baseKey==='putting')return'putting';
+  if(baseKey==='chipping')return'chipping';
+  if(baseKey.startsWith('tee_par3'))return'tee_par3';
+  if(baseKey.startsWith('tee_par4'))return'tee_par45';
+  if(baseKey.startsWith('grn_bnk'))return'grn_bnk';
+  if(baseKey.startsWith('trees'))return'trees';
+  if(baseKey.startsWith('water'))return'water';
+  // Direct match?
+  if(CL.kickers[baseKey])return baseKey;
+  // Fallback
+  return'_default';
+}
+
+// WHAT'S MY PLAY
 function whatsMyPlay(){
+  // #2 fix: guard no yardage
+  if(!state.skipDistance&&(!state.yardage||state.yardage<=0)){
+    // Auto-skip if they didn't enter yardage
+    state.skipDistance=true;
+  }
+
   resetCards();
   const isTee=state.subScenario&&state.subScenario.startsWith('tee_');
   const isPunch=state.subScenario==='trees_punch';
@@ -126,17 +185,22 @@ function whatsMyPlay(){
   }
 
   const conf=CL.calcConfidence(state.activeConditions,state.windState,state.isRaining,smartClub.dist);
+  const kickerKey=getKickerKey(baseKey);
 
-  // Concise play text for card fronts — caddy voice, 1-2 lines max
-  let smartText=firstSentence(advice.smartText||'Center green. Smooth swing.');
-  let heroText=firstSentence(advice.heroText||'At the pin. Full commit.');
-  // Tee par 4/5: name safe club
-  if(state.subScenario==='tee_par45'&&smartClub.dist>0){const safe=state.bag.filter(c=>c.on&&!c.teeOnly).sort((a,b)=>b.dist-a.dist);if(safe.length)smartText=safe[0].name+' to the fairway. '+smartText;}
+  // #16 fix: build smart text without duplication
+  let smartText=advice.smartText||'Center green. Smooth swing.';
+  if(state.subScenario==='tee_par45'&&smartClub.dist>0){
+    const safe=state.bag.filter(c=>c.on&&!c.teeOnly).sort((a,b)=>b.dist-a.dist);
+    if(safe.length)smartText=safe[0].name+' — '+smartText;
+  }
   if(isLayup&&layupClub)smartText=layupClub.name+' — lay up to '+bestWedgeDist+' out.';
 
-  // Extras from modifiers — append one-liners
-  const extras=(advice.extras||[]).map(e=>firstSentence(e));
+  // #17 fix: hero text gets actual club name prepended (content no longer hardcodes club)
+  let heroText=advice.heroText||'At the pin. Full commit.';
 
+  const extras=(advice.extras||[]).map(e=>firstLine(e));
+
+  // #10 fix: show smart club as main, hero club as subtitle
   const clubDisplay=(isLayup&&layupClub)?layupClub.name:smartClub.name;
   $('out-yardage').textContent=state.skipDistance?'—':state.yardage;
   $('out-adjusted').textContent=state.skipDistance?'—':adjusted;
@@ -150,55 +214,68 @@ function whatsMyPlay(){
   else state.activeConditions.forEach(k=>{const c=CL.conditions[k];tags.push({label:c.label,type:c.group});});
   if(state.windState>0)tags.push({label:['','Lt','Mod','Str'][state.windState]+' '+state.windDir,type:'wind'});
   if(state.isRaining)tags.push({label:'Rain',type:'wind'});
-  $('situation-summary').innerHTML=tags.length?tags.map(t=>`<span class="sit-tag ${t.type}">${t.label}</span>`).join('')+'<div style="font-size:10px;color:var(--text-dimmer);margin-top:3px">Tap yardage to edit</div>':'<div style="font-size:12px;color:var(--text-dim)">Clean lie</div>';
+  // #10: show hero club if different from smart
+  let heroLine='';
+  if(heroClub&&heroClub.name!==smartClub.name)heroLine=`<div style="font-size:10px;color:var(--copper);margin-top:2px">Hero: ${heroClub.name}</div>`;
+  $('situation-summary').innerHTML=(tags.length?tags.map(t=>`<span class="sit-tag ${t.type}">${t.label}</span>`).join(''):'<span style="font-size:12px;color:var(--text-dim)">Clean lie</span>')+heroLine+'<div style="font-size:10px;color:var(--text-dimmer);margin-top:3px">Tap yardage to edit</div>';
 
-  // Card fronts — SHORT, caddy voice
-  const kickerKey=baseKey.split('_')[0]||'_default';
-  $('smart-text').innerHTML=`<div class="ms">${smartText}</div>${extras.length?'<div style="font-size:11px;color:var(--text-dim);margin-top:6px">'+extras.join(' ')+'</div>':''}<div class="card-kicker mc">${CL.getKicker(kickerKey)}</div>`;
-  $('hero-text').innerHTML=`<div class="ms">${heroClub.name} — ${heroText}</div>${extras.length?'<div style="font-size:11px;color:var(--text-dim);margin-top:6px">'+extras.join(' ')+'</div>':''}<div class="card-kicker mc">${CL.getKicker(kickerKey)}</div>`;
+  // Card fronts — club name + concise text
+  $('smart-text').innerHTML=`<div class="ms">${clubDisplay} — ${firstLine(smartText)}</div>${extras.length?'<div style="font-size:11px;color:var(--text-dim);margin-top:6px">'+extras.join(' ')+'</div>':''}<div class="card-kicker mc">${CL.getKicker(kickerKey)}</div>`;
+  $('hero-text').innerHTML=`<div class="ms">${heroClub.name} — ${firstLine(heroText)}</div>${extras.length?'<div style="font-size:11px;color:var(--text-dim);margin-top:6px">'+extras.join(' ')+'</div>':''}<div class="card-kicker mc">${CL.getKicker(kickerKey)}</div>`;
 
-  // Card backs — condensed: ball, swing, aim only + remember/danger
   buildSetupBack('smart-setup',advice,smartClub,'smart');
   buildSetupBack('hero-setup',advice,heroClub,'hero');
 
   state._smartClub=smartClub;state._heroClub=heroClub;state._adjusted=adjusted;state._mods=mods;
-  state._lastPlayText=clubDisplay+' — '+smartText;
+  state._lastPlayText=clubDisplay+' — '+firstLine(smartText);
+  state._cameFromOutput=false;
   showScreen('output');
 }
 
 function buildSetupBack(elId,advice,club,type){
   const el=$(elId),isH=type==='hero',lc=isH?'mc':'mg';let h='';
-  // Show only the 3 most critical setup cues — first sentence each
-  if(advice.ball)h+=`<div class="setup-row"><span class="setup-label ${lc}">Ball</span><span class="setup-value ms">${firstSentence(advice.ball)}</span></div>`;
-  if(advice.swing)h+=`<div class="setup-row"><span class="setup-label ${lc}">Swing</span><span class="setup-value ms">${firstSentence(advice.swing)}</span></div>`;
-  if(advice.aim)h+=`<div class="setup-row"><span class="setup-label ${lc}">Aim</span><span class="setup-value ms">${firstSentence(advice.aim)}</span></div>`;
-  if(!isH&&advice.remember)h+=`<div class="remember-section"><div class="remember-label">REMEMBER</div><div class="remember-text">${firstSentence(advice.remember)}</div></div>`;
-  if(isH&&advice.heroDanger)h+=`<div class="danger-section"><div class="danger-label">DANGER</div><div class="danger-text">${firstSentence(advice.heroDanger)}</div></div>`;
-  h+=`<div class="closing-kicker"><span class="mc">${CL.getKicker(state._baseKey||'_default')}</span></div>`;
+  if(advice.ball)h+=`<div class="setup-row"><span class="setup-label ${lc}">Ball</span><span class="setup-value ms">${firstLine(advice.ball)}</span></div>`;
+  if(advice.swing)h+=`<div class="setup-row"><span class="setup-label ${lc}">Swing</span><span class="setup-value ms">${firstLine(advice.swing)}</span></div>`;
+  if(advice.aim)h+=`<div class="setup-row"><span class="setup-label ${lc}">Aim</span><span class="setup-value ms">${firstLine(advice.aim)}</span></div>`;
+  if(!isH&&advice.remember)h+=`<div class="remember-section"><div class="remember-label">REMEMBER</div><div class="remember-text">${firstLine(advice.remember)}</div></div>`;
+  if(isH&&advice.heroDanger)h+=`<div class="danger-section"><div class="danger-label">DANGER</div><div class="danger-text">${firstLine(advice.heroDanger)}</div></div>`;
+  h+=`<div class="closing-kicker"><span class="mc">${CL.getKicker(getKickerKey(state._baseKey||'_default'))}</span></div>`;
   el.innerHTML=h;
 }
 function flipCard(wrap){wrap.querySelector('.card-inner').classList.toggle('flipped');haptic(8);}
 function resetCards(){document.querySelectorAll('.card-inner').forEach(c=>c.classList.remove('flipped'));}
 
-// COMMIT — stays on same hole, only clears terrain/conditions, keeps weather
+// COMMIT — #11: reset yardage to 0 (blank), not 150
 function commitSmart(){debounce(()=>{logShot('smart',state._smartClub);showCommitFlash('smart');afterCommit();});}
 function commitHero(){debounce(()=>{logShot('hero',state._heroClub);showCommitFlash('hero');afterCommit();});}
 function logShot(type,club){state.shots.push({hole:state.hole,yardage:state.yardage,adjusted:state._adjusted,conditions:[...state.activeConditions],sub:state.subScenario,subLabel:state.subScenario?CL.getSubLabel(state.subScenario,state.hand):'',wind:state.windState,windDir:state.windDir,rain:state.isRaining,elev:state.elevation,temp:state.temp,club:club?club.name:'',type:type,playText:state._lastPlayText||'',time:Date.now(),thumbs:null});saveState();}
-function showCommitFlash(type){const f=document.createElement('div');f.className='commit-flash '+type;document.getElementById('app').appendChild(f);setTimeout(()=>f.remove(),500);haptic(20);}
+function showCommitFlash(type){const f=document.createElement('div');f.className='commit-flash '+type;document.getElementById('app').appendChild(f);setTimeout(()=>{try{f.remove();}catch(e){}},500);haptic(20);}
 function afterCommit(){
-  // Clear shot-specific: terrain, slope, sub, yardage
-  // KEEP: wind, rain, temp, elevation (course conditions)
-  state.activeConditions=[];state.subScenario=null;state.yardage=150;state.skipDistance=false;
+  state.activeConditions=[];state.subScenario=null;
+  state.yardage=0;state.skipDistance=false; // #11: blank, not 150
   document.querySelectorAll('.cond-icon').forEach(e=>e.classList.remove('on'));
   updateYardageDisplay();
-  // Stay on same hole — don't advance
   goToInput();
 }
-function editFromOutput(){showScreen('input');}
 
-// SCREENS
-function showScreen(name){closeMenu();['input','output','bag','settings','history','insights','share','about','confessional'].forEach(s=>{const el=$('screen-'+s);if(el)el.classList.toggle('hidden',s!==name);});state.currentScreen=name;document.querySelectorAll('.menu-item[data-screen]').forEach(m=>m.classList.toggle('active-screen',m.dataset.screen===name));if(name==='bag')renderBag();if(name==='settings')renderSettings();if(name==='history')renderHistory();if(name==='insights')renderInsights();if(name==='about'){$('about-privacy').textContent=CL.privacyPolicy;$('about-terms').textContent=CL.termsOfService;}saveState();}
-function goToInput(){closeMenu();showScreen('input');resetCards();}
+// #5 fix: editing from output tracks origin
+function editFromOutput(){state._cameFromOutput=true;showScreen('input');}
+
+// #23 fix: scroll to top on every screen change
+function showScreen(name){
+  closeMenu();
+  ['input','output','bag','settings','history','insights','share','about','confessional'].forEach(s=>{
+    const el=$('screen-'+s);if(el)el.classList.toggle('hidden',s!==name);
+  });
+  state.currentScreen=name;
+  document.querySelectorAll('.menu-item[data-screen]').forEach(m=>m.classList.toggle('active-screen',m.dataset.screen===name));
+  // Scroll to top
+  const activeScreen=$('screen-'+name);if(activeScreen)activeScreen.scrollTop=0;
+  if(name==='bag')renderBag();if(name==='settings')renderSettings();if(name==='history')renderHistory();if(name==='insights')renderInsights();
+  if(name==='about'){$('about-privacy').textContent=CL.privacyPolicy;$('about-terms').textContent=CL.termsOfService;}
+  saveState();
+}
+function goToInput(){closeMenu();showScreen('input');resetCards();state._cameFromOutput=false;}
 function openMenu(){$('menu').classList.remove('hidden');haptic(10);}
 function closeMenu(){$('menu').classList.add('hidden');}
 
@@ -222,49 +299,40 @@ function endRound(){showScreen('confessional');const total=state.shots.length,sm
 function adjScore(d){const defs={'80s':88,'90s':96,'100s':104,'110+':112};if(state.confScore===null)state.confScore=defs[state.range]||100;state.confScore=Math.max(50,Math.min(150,state.confScore+d));$('conf-score').textContent=state.confScore;haptic(8);}
 function finishRound(){state.rounds.push({date:new Date().toLocaleDateString(),course:state.course,shots:[...state.shots],score:state.confScore,smart:state.shots.filter(s=>s.type==='smart').length,hero:state.shots.filter(s=>s.type==='hero').length});state.roundActive=false;state.shots=[];state.hole=1;$('hole-num').textContent='1';cleanupRounds();saveState();goToInput();haptic(20);}
 
-// HISTORY — expandable with advice, thumbs, wind
+// #14 fix: history renders past rounds too
 function renderHistory(){const list=$('history-list');let h='';
-  if(state.shots.length){h+=`<div style="padding:8px 0;border-bottom:1px solid #111"><div style="display:flex;justify-content:space-between"><span style="font-size:15px;font-weight:600" class="mg">Today${state.course?' — '+state.course:''}</span><span style="font-size:11px;color:var(--text-dim)">${state.shots.length}</span></div></div>`;
-  h+=state.shots.slice().reverse().map((s,ri)=>{const idx=state.shots.length-1-ri;const windStr=s.wind>0?['','Lt','Mod','Str'][s.wind]+' '+s.windDir:'';
-    return`<div class="shot-entry" onclick="this.querySelector('.shot-detail')?.classList.toggle('hidden')"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:13px;font-weight:600" class="ms">Hole ${s.hole}</span><span class="shot-tag ${s.type==='smart'?'smart':'hero'}">${s.type==='smart'?'Smart':'Hero'}</span></div><div style="font-size:12px;color:var(--text-dim)">${s.yardage?s.yardage+'y':'—'} · ${s.subLabel||s.conditions.map(c=>CL.conditions[c]?.label).join(' · ')||'Clean'} · <span class="mg">${s.club}</span></div><div class="shot-detail hidden">${s.playText?'<div style="font-size:12px;margin-bottom:6px" class="ms">'+s.playText+'</div>':''}${windStr?'<div style="font-size:10px;color:var(--silver)">Wind: '+windStr+(s.rain?' + Rain':'')+'</div>':s.rain?'<div style="font-size:10px;color:var(--blue)">Rain</div>':''}${s.adjusted&&s.adjusted!==s.yardage?'<div style="font-size:10px;color:var(--text-dim)">Plays '+s.adjusted+'</div>':''}<div class="thumb-row"><button class="thumb-btn up ${s.thumbs==='up'?'active':''}" onclick="event.stopPropagation();thumbShot(${idx},'up')">Good</button><button class="thumb-btn dn ${s.thumbs==='down'?'active':''}" onclick="event.stopPropagation();thumbShot(${idx},'down')">Bad</button><button class="delete-shot-btn" onclick="event.stopPropagation();deleteShot(${idx})">Delete</button></div></div></div>`;}).join('');}
-  if(!h&&!state.rounds.length)h='<div style="text-align:center;padding:40px 0;color:var(--text-dimmer)">No shots yet.</div>';
+  if(state.shots.length){
+    h+=`<div style="padding:8px 0;border-bottom:1px solid #111"><div style="display:flex;justify-content:space-between"><span style="font-size:15px;font-weight:600" class="mg">Today${state.course?' — '+state.course:''}</span><span style="font-size:11px;color:var(--text-dim)">${state.shots.length}</span></div></div>`;
+    h+=state.shots.slice().reverse().map((s,ri)=>{const idx=state.shots.length-1-ri;const windStr=s.wind>0?['','Lt','Mod','Str'][s.wind]+' '+s.windDir:'';
+      return`<div class="shot-entry" onclick="this.querySelector('.shot-detail')?.classList.toggle('hidden')"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:13px;font-weight:600" class="ms">Hole ${s.hole}</span><span class="shot-tag ${s.type==='smart'?'smart':'hero'}">${s.type==='smart'?'Smart':'Hero'}</span></div><div style="font-size:12px;color:var(--text-dim)">${s.yardage?s.yardage+'y':'—'} · ${s.subLabel||s.conditions.map(c=>CL.conditions[c]?.label).join(' · ')||'Clean'} · <span class="mg">${s.club}</span></div><div class="shot-detail hidden">${s.playText?'<div style="font-size:12px;margin-bottom:6px" class="ms">'+s.playText+'</div>':''}${windStr?'<div style="font-size:10px;color:var(--silver)">Wind: '+windStr+(s.rain?' + Rain':'')+'</div>':s.rain?'<div style="font-size:10px;color:var(--blue)">Rain</div>':''}${s.adjusted&&s.adjusted!==s.yardage?'<div style="font-size:10px;color:var(--text-dim)">Plays '+s.adjusted+'</div>':''}<div class="thumb-row"><button class="thumb-btn up ${s.thumbs==='up'?'active':''}" onclick="event.stopPropagation();thumbShot(${idx},'up')">Good</button><button class="thumb-btn dn ${s.thumbs==='down'?'active':''}" onclick="event.stopPropagation();thumbShot(${idx},'down')">Bad</button><button class="delete-shot-btn" onclick="event.stopPropagation();deleteShot(${idx})">Delete</button></div></div></div>`;}).join('');
+  }
+  // #14: past rounds
+  state.rounds.slice().reverse().forEach(r=>{
+    h+=`<div style="padding:8px 0;border-bottom:1px solid #111;opacity:.6"><div style="display:flex;justify-content:space-between"><span style="font-size:13px;color:var(--text-dim)">${r.date}${r.course?' — '+r.course:''}</span><span style="font-size:10px;color:var(--text-dimmer)">${r.shots.length} shots${r.score?' · '+r.score:''}</span></div></div>`;
+    h+=r.shots.slice().reverse().slice(0,3).map(s=>`<div style="padding:6px 4px;border-bottom:1px solid #0a0a08;font-size:12px;color:var(--text-dim)">${s.club||'—'} · ${s.type==='smart'?'Smart':'Hero'}${s.yardage?' · '+s.yardage+'y':''}</div>`).join('');
+    if(r.shots.length>3)h+=`<div style="font-size:10px;color:var(--text-dimmer);padding:4px">+ ${r.shots.length-3} more</div>`;
+  });
+  if(!h)h='<div style="text-align:center;padding:40px 0;color:var(--text-dimmer)">No shots yet.</div>';
   list.innerHTML=h;
 }
 function thumbShot(idx,dir){state.shots[idx].thumbs=state.shots[idx].thumbs===dir?null:dir;saveState();renderHistory();haptic(10);}
 function deleteShot(idx){if(!confirm('Delete?'))return;state.shots.splice(idx,1);saveState();renderHistory();haptic(15);}
 
-// WHAT'S WORKING — analyzes thumbs data
+// WHAT'S WORKING
 function renderInsights(){
   const shots=state.shots;const good=shots.filter(s=>s.thumbs==='up');const bad=shots.filter(s=>s.thumbs==='down');
-  const total=shots.length,rated=good.length+bad.length;
-  let h='';
-  if(rated===0){h='<div style="text-align:center;padding:40px 0;color:var(--text-dimmer)">Rate your shots with Good/Bad in Shot History to see patterns.</div>';$('insights-content').innerHTML=h;return;}
-
-  // Smart vs hero success
+  const rated=good.length+bad.length;let h='';
+  if(rated===0){h='<div style="text-align:center;padding:40px 0;color:var(--text-dimmer)">Rate shots with Good/Bad in Shot History to see patterns.</div>';$('insights-content').innerHTML=h;return;}
   const smartGood=good.filter(s=>s.type==='smart').length,smartBad=bad.filter(s=>s.type==='smart').length;
   const heroGood=good.filter(s=>s.type==='hero').length,heroBad=bad.filter(s=>s.type==='hero').length;
   const smartTotal=smartGood+smartBad,heroTotal=heroGood+heroBad;
-
   h+=`<div class="insight-card"><div class="insight-title mg">SMART PLAY</div><div class="insight-body">${smartTotal>0?smartGood+' good out of '+smartTotal+' rated.':'No Smart Play shots rated yet.'}</div></div>`;
   h+=`<div class="insight-card"><div class="insight-title mc">LET IT EAT</div><div class="insight-body">${heroTotal>0?heroGood+' good out of '+heroTotal+' rated.':'No hero shots rated yet.'}</div></div>`;
-
-  // Group by terrain
   const terrainMap={};shots.filter(s=>s.thumbs).forEach(s=>{const key=s.subLabel||s.conditions.map(c=>CL.conditions[c]?.label).join(', ')||'Clean';if(!terrainMap[key])terrainMap[key]={good:0,bad:0};if(s.thumbs==='up')terrainMap[key].good++;else terrainMap[key].bad++;});
-
   const sorted=Object.entries(terrainMap).sort((a,b)=>(b[1].good+b[1].bad)-(a[1].good+a[1].bad));
-  if(sorted.length){
-    h+='<div class="section-label mc">BY SITUATION</div>';
-    sorted.forEach(([key,v])=>{
-      const pct=Math.round(v.good/(v.good+v.bad)*100);
-      const cls=pct>=60?'good':'bad';
-      h+=`<div class="insight-card ${cls}"><div class="insight-title ms">${key}</div><div class="insight-body">${v.good} good, ${v.bad} bad</div><div class="insight-stat" style="color:${pct>=60?'var(--green)':'var(--red)'}">${pct}% success</div></div>`;
-    });
-  }
-
-  // Caddy observation
+  if(sorted.length){h+='<div class="section-label mc">BY SITUATION</div>';sorted.forEach(([key,v])=>{const pct=Math.round(v.good/(v.good+v.bad)*100);h+=`<div class="insight-card ${pct>=60?'good':'bad'}"><div class="insight-title ms">${key}</div><div class="insight-body">${v.good} good, ${v.bad} bad</div><div class="insight-stat" style="color:${pct>=60?'var(--green)':'var(--red)'}">${pct}% success</div></div>`;});}
   if(heroTotal>0&&heroBad>heroGood)h+=`<div style="font-family:var(--serif);font-style:italic;font-size:13px;text-align:center;padding:16px 0" class="mc">Hero shots: ${heroGood} worked, ${heroBad} didn't. The numbers don't lie.</div>`;
   else if(smartTotal>0&&smartGood>smartBad)h+=`<div style="font-family:var(--serif);font-style:italic;font-size:13px;text-align:center;padding:16px 0" class="mc">Smart Play is working. Keep listening.</div>`;
-
   $('insights-content').innerHTML=h;
 }
 

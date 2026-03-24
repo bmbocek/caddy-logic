@@ -5,7 +5,7 @@
 // Smart Play = safe mechanics. Let It Eat = bold but not stupid.
 
 const CL = {
-version: '1.0.4 Beta',
+version: '1.0.5 Beta',
 
 // =============================================
 // BAGS
@@ -115,7 +115,7 @@ tee_par45: {
   hands:'Ten-finger grip: hands packed tight, working as one. Grip light — toothpaste tube.',
   remember:'The fairway wins the hole. Not distance. A ball in the fairway sets up everything next.',
   smartText:'to the fairway. Smooth tempo, grip light, turn shoulders. Find the short grass.',
-  heroText:'driver, full send. Tee high, weight back, swing UP through it. Head behind ball. Full turn, full finish.',
+  heroText:'full send. Tee high, weight back, swing UP through it. Head behind ball. Full turn, full finish.',
   heroDanger:'Driver is longest and hardest to control. 3-Wood in the fairway beats driver in the trees. Every time.'
 },
 fairway: {
@@ -257,8 +257,8 @@ trees_punch: {
   aim:'WIDEST gap to fairway. Largest opening. Safety only.',
   hands:'Hands well ahead. Firm grip.',
   remember:'Low and running. Widest gap. One shot sideways = bogey. Through trees and hit = triple.',
-  smartText:'punch to fairway. 7 or 8 iron, ball back, half swing, low finish. Widest gap.',
-  heroText:'driver stinger through the gap. Low, screaming, full distance through a window between trunks.',
+  smartText:'punch to fairway. Ball back, half swing, low finish. Widest gap.',
+  heroText:'stinger through the gap. Low, screaming, full distance through a window between trunks.',
   heroDanger:'Trees are 90% air, but the 10% that\'s wood always wins. Gap is smaller than it looks.'
 },
 water_front_over: {
