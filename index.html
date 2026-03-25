@@ -204,8 +204,8 @@
 <div class="sub-panel" id="sub-panel"><div class="sub-handle"></div><div id="sub-content"></div></div>
 
 <!-- WIND POPUP -->
-<div class="wind-popup hidden" id="wind-popup">
-  <div class="wind-popup-card">
+<div class="wind-popup hidden" id="wind-popup" onclick="closeWindPopup()">
+  <div class="wind-popup-card" onclick="event.stopPropagation()">
     <div class="wind-popup-title ms">WIND</div>
     <div class="wind-speed-row" id="wind-speed-row"></div>
     <div class="wind-dir-section" id="wind-dir-section">
@@ -215,7 +215,7 @@
     <button class="wind-done-btn" onclick="closeWindPopup()">DONE</button>
   </div>
 </div>
-<div class="wind-popup hidden" id="hole-picker"><div class="wind-popup-card"><div class="wind-popup-title ms">HOLE</div><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px" id="hole-grid"></div><button class="wind-done-btn" style="margin-top:12px" onclick="closeHolePicker()">CLOSE</button></div></div>
+<div class="wind-popup hidden" id="hole-picker" onclick="closeHolePicker()"><div class="wind-popup-card" onclick="event.stopPropagation()"><div class="wind-popup-title ms">HOLE</div><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px" id="hole-grid"></div><button class="wind-done-btn" style="margin-top:12px" onclick="closeHolePicker()">CLOSE</button></div></div>
 
 <!-- PRE-ROUND -->
 <div class="preround-overlay hidden" id="preround">
@@ -242,7 +242,7 @@
     <div class="menu-item" data-screen="history" onclick="showScreen('history')"><div><div class="menu-item-text ms">Shot History</div></div></div>
     <div class="menu-item" data-screen="insights" onclick="showScreen('insights')"><div><div class="menu-item-text ms">What's Working</div></div></div>
     <div class="menu-item" data-screen="settings" onclick="showScreen('settings')"><div><div class="menu-item-text ms">Round Settings</div></div></div>
-    <div class="menu-item" onclick="endRound()"><div><div class="menu-item-text ms">End Round</div></div></div>
+    <div class="menu-item" data-screen="confessional" onclick="endRound()"><div><div class="menu-item-text ms">End Round</div></div></div>
     <div class="menu-item" data-screen="about" onclick="showScreen('about')"><div><div class="menu-item-text ms">About</div></div></div>
   </div>
 </div>
